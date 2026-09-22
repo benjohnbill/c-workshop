@@ -1,0 +1,22 @@
+# Build outputs
+/build/
+**/build/
+*.o
+*.a
+*.so
+*.out
+
+# Runtime and diagnostic artifacts
+*.tmp
+*.log
+vgcore.*
+core
+core.*
+
+# Local study data
+.study.tsv
+study.tsv
+
+# Local environment
+.env
+.cache/
