@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
-# Usage: lab/test_stage6_record_model.sh
-# Checks practice6.c against the Stage 6 brief and the shared contract:
+# Usage: lab/test_stage6_record_model.sh [BINARY]
+# Checks Stage 6 behavior against the brief and the shared contract:
 # stdout, exit code, and whether stderr got a message.
+# Without BINARY it builds practice6.c with the c wrapper; with BINARY
+# (for example projects/study-cli/study) it runs that executable.
 set -uo pipefail
+bin=${1:+$(realpath "$1")}
 cd "$(dirname "$0")/.."
 
 src=practice/06-dynamic-array/practice6.c
 fails=0
+
+run() {
+    if [[ -n $bin ]]; then "$bin" "$@"; else c "$src" "$@"; fi
+}
 
 # check NAME EXIT STDERR(yes|no) STDOUT [ARGS...]
 check() {
@@ -14,7 +21,7 @@ check() {
     shift 4
     local out err got_exit
     err=$(mktemp)
-    out=$(c "$src" "$@" 2>"$err")
+    out=$(run "$@" 2>"$err")
     got_exit=$?
     local got_err=no
     [[ -s $err ]] && got_err=yes
