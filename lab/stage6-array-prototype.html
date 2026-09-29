@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>배열은 어디에 놓일까? — Stage 6</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17232d;
+      --muted: #64727c;
+      --line: #d7dedf;
+      --paper: #f3f5f1;
+      --white: #fff;
+      --blue: #176b87;
+      --blue-soft: #dceef1;
+      --orange: #b74e2c;
+      --orange-soft: #f8e6db;
+      --green: #26724f;
+      --green-soft: #dff1e6;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible {
+      outline: 3px solid #e28648;
+      outline-offset: 3px;
+    }
+    code, pre, .mono { font-family: var(--mono); }
+    code { font-size: .93em; }
+    .page-shell { width: min(1160px, calc(100% - 40px)); margin: 0 auto; padding: 52px 0 128px; }
+    .masthead { display: flex; justify-content: space-between; align-items: center; padding-bottom: 18px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+    .masthead strong { color: var(--ink); font-weight: 650; }
+    .stage { min-height: 620px; }
+    .eyebrow { margin: 0 0 14px; color: var(--blue); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { max-width: 820px; margin-bottom: 14px; font-size: clamp(36px, 6vw, 68px); line-height: 1.02; letter-spacing: -.055em; font-weight: 730; }
+    h2 { font-size: clamp(23px, 3vw, 34px); line-height: 1.12; letter-spacing: -.035em; }
+    h3 { margin-bottom: 8px; font-size: 16px; }
+    .lede { max-width: 710px; color: var(--muted); font-size: 18px; line-height: 1.65; }
+    .quiet { color: var(--muted); }
+    .micro { font-size: 13px; line-height: 1.55; }
+    .section-heading { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin: 42px 0 16px; }
+    .section-heading h2 { margin: 0; }
+    .section-heading p { margin: 0; color: var(--muted); font-size: 13px; }
+    .panel { border: 1px solid var(--line); border-radius: 14px; background: var(--white); }
+    .button-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .action {
+      min-height: 42px; padding: 0 15px; border: 1px solid var(--ink); border-radius: 6px;
+      background: var(--ink); color: white; font-weight: 650;
+    }
+    .action.secondary { background: transparent; color: var(--ink); }
+    .action:hover { filter: brightness(1.12); }
+    .status { min-height: 24px; color: var(--muted); font-size: 14px; }
+    .callout { padding: 14px 16px; border-left: 3px solid var(--blue); background: var(--blue-soft); line-height: 1.55; }
+    .callout.warn { border-color: var(--orange); background: var(--orange-soft); }
+    .callout.good { border-color: var(--green); background: var(--green-soft); }
+
+    /* Direction 1: spatial memory map */
+    .map-hero { padding: 34px; border-radius: 20px; background: #172b35; color: #f2f3eb; }
+    .map-hero .eyebrow { color: #91d5ce; }
+    .map-hero .lede { color: #c1d1d1; }
+    .map-hero h1 { max-width: 760px; }
+    .map-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 30px; }
+    .map-case { padding: 20px; border: 1px solid #45606a; border-radius: 12px; background: #203944; }
+    .map-case h2 { margin: 0 0 6px; font-size: 21px; }
+    .map-case > p { min-height: 42px; margin-bottom: 17px; color: #bfd0d0; font-size: 13px; line-height: 1.5; }
+    .rec-box { padding: 12px; border: 1px solid #77909a; border-radius: 8px; background: #142a34; }
+    .rec-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 10px; color: #d6e1dc; font: 12px var(--mono); }
+    .slot-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+    .slot { min-height: 60px; padding: 8px; border: 1px dashed #68818a; border-radius: 6px; color: #a9bec0; font: 11px/1.4 var(--mono); overflow-wrap: anywhere; }
+    .slot.filled { border-style: solid; border-color: #78c8b3; background: #264f4c; color: #dff8ed; }
+    .slot.fault { border-color: #f2936e; background: #633d38; color: #ffe4d4; }
+    .pointer-rail { display: flex; align-items: center; gap: 10px; margin: 12px 0; color: #a8c9ca; font: 11px var(--mono); }
+    .pointer-rail::before { content: ""; width: 35px; height: 1px; background: #8fcfc0; }
+    .sub-nodes { display: flex; flex-wrap: wrap; gap: 7px; }
+    .sub-node { padding: 7px 9px; border: 1px solid #537e78; border-radius: 5px; background: #1c514a; color: #e2f5e9; font: 11px var(--mono); }
+    .rec-shell { display: grid; grid-template-columns: 1.1fr 1fr; gap: 8px; align-items: stretch; }
+    .field-chip { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px; border: 1px solid #77909a; border-radius: 6px; color: #d6e1dc; font: 11px var(--mono); }
+    .outside-table { padding: 10px; border: 1px solid #7ca6a0; border-radius: 7px; background: #1a4144; }
+    .outside-title { margin-bottom: 8px; color: #b8d8d1; font: 10px var(--mono); }
+    .map-controls { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-top: 20px; }
+    .map-controls .status { color: #c1d1d1; }
+    .map-controls .action { border-color: #87c9ba; background: #8fd0be; color: #142a34; }
+    .map-controls .action.secondary { border-color: #66818a; background: transparent; color: #e4eeea; }
+    .map-note { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; color: #d1ded9; }
+    .map-note p { margin: 0; padding: 13px; border-top: 1px solid #45606a; font-size: 13px; line-height: 1.55; }
+
+    /* Direction 2: hands-on capacity simulator */
+    .lab-header { display: grid; grid-template-columns: 1fr 300px; gap: 30px; align-items: end; }
+    .lab-counter { padding: 20px; border-top: 4px solid var(--blue); background: #e6ece8; }
+    .lab-counter strong { display: block; font: 700 40px/1 var(--mono); letter-spacing: -.06em; }
+    .lab-counter span { display: block; margin-top: 8px; color: var(--muted); font-size: 13px; }
+    .lab-tools { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: end; padding: 20px; }
+    .range-wrap label { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; font-weight: 650; }
+    .range-wrap input { width: 100%; accent-color: var(--blue); }
+    .range-ticks { display: flex; justify-content: space-between; color: var(--muted); font: 11px var(--mono); }
+    .lab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .lab-card { padding: 22px; }
+    .lab-card h2 { margin-bottom: 7px; font-size: 24px; }
+    .lab-card > p { min-height: 42px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .capacity-line { display: flex; justify-content: space-between; align-items: baseline; margin: 18px 0 10px; }
+    .capacity-line strong { font: 700 15px var(--mono); }
+    .capacity-line span { color: var(--muted); font: 12px var(--mono); }
+    .lab-slots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+    .lab-slot { min-height: 58px; padding: 8px 6px; border: 1px solid var(--line); background: #f7f8f5; color: #738087; font: 10px/1.4 var(--mono); text-align: center; overflow-wrap: anywhere; }
+    .lab-slot.used { border-color: #78a99c; background: var(--green-soft); color: #225b40; }
+    .lab-slot.overflow { border-color: var(--orange); background: var(--orange-soft); color: #8a361f; }
+    .lab-slot.new-space { border-color: var(--blue); background: var(--blue-soft); color: #13566e; }
+    .lab-result { min-height: 78px; margin-top: 14px; padding: 12px; background: #f3f5f1; font-size: 13px; line-height: 1.55; }
+    .lab-result.bad { color: #8a361f; }
+    .lab-result.ok { color: #225b40; }
+    .growth-track { display: flex; align-items: center; gap: 8px; margin-top: 14px; color: var(--muted); font: 11px var(--mono); }
+    .growth-track b { color: var(--blue); font-weight: 650; }
+    .lab-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+    .lab-bottom .callout { min-height: 82px; }
+
+    /* Direction 3: editorial code-change narrative */
+    .diff-page { max-width: 900px; margin: 0 auto; }
+    .diff-top { display: grid; grid-template-columns: 110px 1fr; gap: 24px; padding: 28px 0 24px; border-bottom: 1px solid var(--line); }
+    .diff-index { color: var(--blue); font: 12px var(--mono); }
+    .diff-top h1 { font-size: clamp(34px, 5vw, 58px); }
+    .diff-top .lede { font-size: 17px; }
+    .diff-story { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 28px 0; border-bottom: 1px solid var(--line); }
+    .diff-story p { color: #46545b; font-size: 15px; line-height: 1.75; }
+    .diff-story .margin-note { align-self: start; padding: 14px 0 14px 17px; border-left: 2px solid var(--blue); color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .code-change { display: grid; grid-template-columns: 38px 1fr; gap: 8px; padding: 8px 12px; font: 13px/1.65 var(--mono); overflow-wrap: anywhere; }
+    .code-change .sign { color: #79878c; }
+    .code-change.old { background: #f8e9e0; color: #773b28; }
+    .code-change.new { background: #e2f1e7; color: #20543a; }
+    .diff-actions { display: flex; flex-wrap: wrap; gap: 9px; margin: 18px 0; }
+    .diff-toggle { padding: 9px 12px; border: 1px solid var(--line); border-radius: 4px; background: white; color: var(--ink); }
+    .diff-toggle[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: white; }
+    .diff-explanation { min-height: 75px; padding: 15px 17px; background: #e8ece7; color: #3e4e55; font-size: 14px; line-height: 1.65; }
+    .append-scene { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
+    .append-scene .panel { padding: 17px; }
+    .append-scene h3 { font-size: 14px; }
+    .scene-row { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); color: #536168; font: 12px var(--mono); }
+    .scene-row:last-child { border-bottom: 0; }
+    .scene-row strong { color: var(--ink); }
+    .scene-bad { color: #9c3d24 !important; }
+    .scene-good { color: #226443 !important; }
+    .diff-foot { display: flex; justify-content: space-between; gap: 18px; align-items: center; padding: 20px 0; color: var(--muted); font-size: 13px; }
+
+    /* Prototype picker: required harness styles */
+    .proto-picker {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2147483647;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 4px;
+      border-radius: 999px;
+      background: rgba(10, 10, 10, 0.82);
+      -webkit-backdrop-filter: blur(12px) saturate(1.4);
+      backdrop-filter: blur(12px) saturate(1.4);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+        0 8px 24px rgba(0, 0, 0, 0.24),
+        0 2px 6px rgba(0, 0, 0, 0.12);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+      line-height: 1;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .proto-picker-highlight {
+      position: absolute;
+      top: 4px;
+      left: 0;
+      height: 28px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      will-change: transform;
+    }
+    .proto-picker[data-ready] .proto-picker-highlight {
+      transition:
+        transform 250ms cubic-bezier(0.23, 1, 0.32, 1),
+        width 250ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .proto-picker[data-ready] .proto-picker-highlight { transition: none; }
+    }
+    .proto-picker-item {
+      position: relative;
+      display: flex;
+      align-items: center;
+      height: 28px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.55);
+      font: inherit;
+      cursor: pointer;
+      transition: color 150ms ease-out;
+    }
+    .proto-picker-item:hover { color: rgba(255, 255, 255, 0.85); }
+    .proto-picker-item:active { transform: scale(0.97); }
+    .proto-picker-item:focus-visible {
+      outline: 2px solid rgba(255, 255, 255, 0.4);
+      outline-offset: 2px;
+    }
+    .proto-picker-item[data-active] { color: #fff; }
+
+    @media (max-width: 760px) {
+      .page-shell { width: min(100% - 24px, 620px); padding-top: 24px; }
+      .masthead { align-items: flex-start; gap: 12px; font-size: 11px; }
+      .map-hero { padding: 22px 16px; }
+      .map-pair, .lab-grid, .lab-bottom, .map-note, .append-scene { grid-template-columns: 1fr; }
+      .map-case > p { min-height: auto; }
+      .map-controls { align-items: flex-start; flex-direction: column; }
+      .lab-header { grid-template-columns: 1fr; gap: 12px; }
+      .lab-counter { display: flex; justify-content: space-between; align-items: center; }
+      .lab-counter strong { font-size: 32px; }
+      .lab-tools { grid-template-columns: 1fr; }
+      .diff-top { grid-template-columns: 1fr; gap: 10px; }
+      .diff-story { grid-template-columns: 1fr; gap: 5px; }
+      .diff-story .margin-note { margin-left: 2px; }
+      .section-heading { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page-shell">
+    <div class="masthead">
+      <strong>C Workshop / Stage 06</strong>
+      <span>배열의 크기와 주소를 구분하기</span>
+    </div>
+    <div id="stage" class="stage" aria-live="polite"></div>
+  </main>
+
+  <nav class="proto-picker" aria-label="Prototype variants">
+    <span class="proto-picker-highlight" aria-hidden="true"></span>
+    <button class="proto-picker-item" data-active aria-current="true">Memory Map</button>
+    <button class="proto-picker-item">Growth Lab</button>
+    <button class="proto-picker-item">Prose Diff</button>
+  </nav>
+
+  <script>
+    const stage = document.getElementById('stage');
+    const picker = document.querySelector('.proto-picker');
+    const highlight = picker.querySelector('.proto-picker-highlight');
+    const items = [...picker.querySelectorAll('.proto-picker-item')];
+    let current = 0;
+
+    const names = ['C', 'C pointers', '자료구조', 'OS', 'malloc lab', 'PintOS', '운영체제', '복습'];
+    const fixedCapacity = 3;
+    const mapState = { count: 0, capacity: 3 };
+    const labState = { count: 0, capacity: 3, moved: false };
+    const diffState = { attempted: false, moved: false, view: 'both' };
+
+    function esc(value) {
+      return String(value).replace(/[&<>"']/g, function (ch) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+      });
+    }
+
+    function slotCells(capacity, used, overflowIndex, prefix, relocated) {
+      let html = '';
+      for (let i = 0; i < capacity; i++) {
+        const filled = i < used;
+        const label = filled ? esc(names[i % names.length]) : '빈 칸';
+        const address = prefix + (i * 8).toString(16).toUpperCase();
+        let cls = filled ? 'slot filled' : 'slot';
+        if (overflowIndex === i) cls += ' fault';
+        if (relocated && !filled) cls += ' new-space';
+        html += '<div class="' + cls + '"><b>[' + i + ']</b><br>' + label + '<br>' + address + '</div>';
+      }
+      if (overflowIndex !== null && overflowIndex >= capacity) {
+        html += '<div class="slot fault"><b>[' + overflowIndex + ']</b><br>범위 밖 쓰기<br>할당되지 않음</div>';
+      }
+      return html;
+    }
+
+    function renderMap() {
+      const count = mapState.count;
+      const fixedUsed = Math.min(count, fixedCapacity);
+      const fixedOverflow = count > fixedCapacity ? fixedCapacity : null;
+      const grown = mapState.capacity > fixedCapacity;
+      const dynamicBase = grown ? 0x5200 : 0x5100;
+      const dynamicUsed = Math.min(count, mapState.capacity);
+      const status = count === 0
+        ? '기록을 추가해 두 배열의 차이를 확인해보세요.'
+        : count <= fixedCapacity
+          ? '두 방식 모두 ' + count + '개를 담았습니다. 고정 배열에도 아직 빈 칸이 있어요.'
+          : '고정 배열은 ' + (count - fixedCapacity) + '번째 초과 기록에서 Rec 바깥을 덮어써요. 동적 배열은 용량을 키웠습니다.';
+      let dynamicSlots = '';
+      for (let i = 0; i < mapState.capacity; i++) {
+        const filled = i < dynamicUsed;
+        dynamicSlots += '<div class="slot ' + (filled ? 'filled' : (grown ? 'new-space' : '')) + '"><b>[' + i + ']</b><br>' +
+          (filled ? esc(names[i % names.length]) : '빈 칸') + '<br>0x' + (dynamicBase + i * 8).toString(16).toUpperCase() + '</div>';
+      }
+      let subNodes = '';
+      for (let i = 0; i < count; i++) {
+        subNodes += '<span class="sub-node">Sub ' + (i + 1) + ' · 0x' + (0x6100 + i * 0x30).toString(16).toUpperCase() + '</span>';
+      }
+      if (!subNodes) subNodes = '<span class="micro" style="color:#a8c9ca">아직 Sub 객체가 없습니다.</span>';
+      return '<section class="map-hero">' +
+        '<p class="eyebrow">포인터 메모리 지도</p>' +
+        '<h1>Rec의 크기와<br>목록의 크기는 달라요.</h1>' +
+        '<p class="lede">Rec 안에 배열을 넣으면 칸 수가 구조체 크기의 일부가 됩니다. Rec 안에 포인터만 두면, 포인터가 가리키는 배열을 따로 키울 수 있어요.</p>' +
+        '<div class="map-pair">' +
+          '<article class="map-case">' +
+            '<h2>A · 고정 배열</h2><p><code>Sub *items[3]</code><br>세 포인터 칸이 Rec 안에 바로 들어 있어요.</p>' +
+            '<div class="rec-box"><div class="rec-title"><span>Rec 객체</span><span>count = ' + count + '</span></div>' +
+              '<div class="slot-row">' + slotCells(fixedCapacity, fixedUsed, fixedOverflow, '0x420', false) + '</div>' +
+            '</div>' +
+            '<div class="pointer-rail">각 칸은 Sub 객체를 가리킴</div>' +
+            '<div class="sub-nodes">' + subNodes + '</div>' +
+          '</article>' +
+          '<article class="map-case">' +
+            '<h2>B · 동적 포인터 배열</h2><p><code>Sub **items</code><br>Rec 안에는 포인터 하나. 포인터 칸들은 별도 블록이에요.</p>' +
+            '<div class="rec-shell"><div class="field-chip"><span>Rec</span><span>count = ' + count + '</span></div>' +
+              '<div class="field-chip"><span>items</span><span>→ ' + (grown ? '0x5200' : '0x5100') + '</span></div></div>' +
+            '<div class="pointer-rail">별도 할당된 포인터 칸 배열</div>' +
+            '<div class="outside-table"><div class="outside-title">heap table · capacity = ' + mapState.capacity + '</div><div class="slot-row">' + dynamicSlots + '</div></div>' +
+            '<div class="pointer-rail">각 채운 칸이 가리키는 별도 Sub 객체</div>' +
+            '<div class="sub-nodes">' + subNodes + '</div>' +
+          '</article>' +
+        '</div>' +
+        '<div class="map-controls"><div><div class="button-row"><button class="action" data-action="map-add">기록 하나 추가</button><button class="action secondary" data-action="map-reset">처음으로</button></div>' +
+        '<p class="status" id="map-status">' + status + '</p></div><p class="micro">세 칸이 찬 뒤 다음 기록을 넣기 전에 동적 배열만 확장합니다.</p></div>' +
+        '<div class="map-note"><p><strong>고정 배열의 문제</strong><br>네 번째 포인터를 쓰면 <code>items[3]</code>가 Rec 바깥이에요. Rec을 static으로 바꿔도 배열은 세 칸 그대로입니다.</p>' +
+        '<p><strong>동적 배열에서 바뀌는 것</strong><br>realloc이 표를 옮겨도 Sub 객체 주소는 그대로예요. 바뀔 수 있는 건 표의 시작 주소라서 <code>items</code>에 새 주소를 저장해야 합니다.</p></div>' +
+      '</section>';
+    }
+
+    function renderLabSlots(capacity, used, bad, moved) {
+      let html = '';
+      for (let i = 0; i < capacity; i++) {
+        let cls = 'lab-slot';
+        let label = '—';
+        if (i < used) {
+          cls += ' used';
+          label = names[i % names.length];
+        }
+        if (bad && i === fixedCapacity) {
+          cls += ' overflow';
+          label = '주소 밖';
+        }
+        if (moved && i >= fixedCapacity && i < capacity && i >= used) cls += ' new-space';
+        html += '<div class="' + cls + '"><b>[' + i + ']</b><br>' + esc(label) + '</div>';
+      }
+      if (bad) html += '<div class="lab-slot overflow"><b>[3]</b><br>없는 칸</div>';
+      return html;
+    }
+
+    function renderLabPanels() {
+      const n = labState.count;
+      const bad = n > fixedCapacity;
+      let capacity = fixedCapacity;
+      while (capacity < n) capacity *= 2;
+      const grew = capacity > fixedCapacity;
+      const address = labState.moved || grew ? '0x8B20' : '0x8A00';
+      const fixedMessage = n <= fixedCapacity
+        ? 'count=' + n + ': 아직 Rec 안의 세 칸 안에 들어갑니다.'
+        : '기록 ' + fixedCapacity + ' 이후부터는 items[3]을 쓰게 됩니다. 그 칸은 Rec에 없어서 범위 밖 접근입니다.';
+      const dynamicMessage = n <= fixedCapacity
+        ? 'count=' + n + ', capacity=' + fixedCapacity + ': 별도 표 안에 안전하게 들어갑니다.'
+        : '추가 전에 표를 ' + fixedCapacity + '칸에서 ' + capacity + '칸으로 확장했습니다. 기존 Sub* 값은 복사되고, Sub 객체 주소는 유지됩니다.';
+      return '<div class="section-heading"><h2>같은 기록 수, 다른 저장 방식</h2><p>초기 용량은 3칸으로 설정했어요.</p></div>' +
+        '<div class="lab-grid">' +
+          '<article class="panel lab-card"><h2>고정 배열</h2><p><code>Sub *items[3]</code>는 Rec 안에 세 칸이 항상 포함됩니다.</p>' +
+            '<div class="capacity-line"><strong>Rec 안 · 3칸</strong><span>count ' + Math.min(n, fixedCapacity) + '</span></div>' +
+            '<div class="lab-slots">' + renderLabSlots(fixedCapacity, Math.min(n, fixedCapacity), bad, false) + '</div>' +
+            '<div class="lab-result ' + (bad ? 'bad' : '') + '">' + fixedMessage + '</div></article>' +
+          '<article class="panel lab-card"><h2>동적 포인터 배열</h2><p><code>Sub **items</code>는 별도 표를 가리킵니다. Rec의 크기는 그대로예요.</p>' +
+            '<div class="capacity-line"><strong>표 ' + capacity + '칸 · items → ' + address + '</strong><span>count ' + n + '</span></div>' +
+            '<div class="lab-slots">' + renderLabSlots(capacity, n, false, grew) + '</div>' +
+            '<div class="lab-result ' + (grew ? 'ok' : '') + '">' + dynamicMessage + '</div>' +
+            '<div class="growth-track"><span>표 주소</span><b>0x8A00</b><span>→</span><b>' + (grew ? address : '변화 없음') + '</b><span>Sub 주소는 유지</span></div></article>' +
+        '</div>' +
+        '<div class="lab-bottom"><div class="callout warn"><strong>실제 문제가 되는 때</strong><br>세 칸을 채운 다음에도 고정 배열에 계속 쓰면, 네 번째 기록은 <code>items[3]</code>에 기록하려다 범위를 벗어납니다.</div>' +
+          '<div class="callout good"><strong>동적 배열의 약속</strong><br><code>count == capacity</code>일 때 다음 기록을 넣기 전에 늘려요. realloc은 표 주소를 옮길 수 있으니 새 주소를 보관해야 합니다.</div></div>' +
+      '';
+    }
+
+    function renderLab() {
+      const n = labState.count;
+      return '<section>' +
+        '<div class="lab-header"><div><p class="eyebrow">직접 늘려보기</p><h1>몇 번째 기록에서<br>차이가 날까요?</h1>' +
+        '<p class="lede">슬라이더를 움직여 기록 수를 바꿔보세요. 고정 배열은 세 칸에서 멈추고, 동적 배열은 꽉 찬 뒤에 표를 늘립니다.</p></div>' +
+        '<div class="lab-counter"><strong id="lab-count">' + n + '</strong><span>추가하려는 기록 수</span></div></div>' +
+        '<div class="panel lab-tools"><div class="range-wrap"><label for="record-range"><span>추가할 기록 수</span><output id="range-output">' + n + '</output></label>' +
+          '<input id="record-range" type="range" min="0" max="8" step="1" value="' + n + '">' +
+          '<div class="range-ticks"><span>0개</span><span>3개 · 초기 용량</span><span>8개</span></div></div>' +
+          '<button class="action secondary" data-action="lab-reset">초기화</button></div>' +
+        '<div id="lab-sim-output">' + renderLabPanels() + '</div>' +
+      '</section>';
+    }
+
+    function renderDiff() {
+      const view = diffState.view;
+      const oldVisible = view !== 'new';
+      const newVisible = view !== 'old';
+      const fourth = diffState.attempted;
+      const moved = diffState.moved;
+      const dynamicCap = fourth ? 6 : 3;
+      const dynamicAddr = moved || fourth ? '0xA800' : '0xA600';
+      return '<section class="diff-page">' +
+        '<div class="diff-top"><div class="diff-index">STAGE 06<br>DESIGN NOTE</div><div><p class="eyebrow">구조 변경을 산문 diff로 읽기</p>' +
+          '<h1>Rec은 그대로.<br>바깥 표만 자랍니다.</h1>' +
+          '<p class="lede">고정 배열과 동적 포인터 배열의 차이는 포인터 문법이 아니라, 배열 저장 공간이 누구의 일부인지에 있어요.</p></div></div>' +
+        '<div class="diff-story"><div><h2>처음 코드</h2><p>Rec 안에 세 칸을 직접 넣으면, 그 세 칸은 Rec의 일부예요. count가 세 개가 된 뒤 네 번째 Sub 주소를 넣으려 해도 Rec에는 네 번째 자리가 없습니다.</p>' +
+          '<div class="code-change old" style="' + (oldVisible ? '' : 'display:none') + '"><span class="sign">−</span><span>Sub *items[3];</span></div>' +
+          '<div class="code-change old" style="' + (oldVisible ? '' : 'display:none') + '"><span class="sign">−</span><span>items[3] = fourth_sub;  // 범위 밖</span></div></div>' +
+          '<aside class="margin-note">세 칸이 꽉 찬 시점은 <code>count == capacity</code>. <code>count == capacity - 1</code>일 때는 마지막 칸이 아직 남아 있어요.</aside></div>' +
+        '<div class="diff-story"><div><h2>바뀐 코드의 생각</h2><p>Rec 안에는 표의 시작 주소를 보관해요. 표는 별도 메모리에 있으니 꽉 찬 뒤 그 표만 더 크게 다시 확보할 수 있습니다. Rec의 크기를 바꾸는 게 아니에요.</p>' +
+          '<div class="code-change new" style="' + (newVisible ? '' : 'display:none') + '"><span class="sign">+</span><span>Sub **items;  // Sub* 칸 배열의 시작</span></div>' +
+          '<div class="code-change new" style="' + (newVisible ? '' : 'display:none') + '"><span class="sign">+</span><span>size_t count, capacity;</span></div></div>' +
+          '<aside class="margin-note">realloc이 표를 옮기면 <code>items</code>에 새 주소를 저장해요. 표 안의 Sub 주소들은 그대로 복사되므로 Sub 객체는 움직이지 않습니다.</aside></div>' +
+        '<div class="diff-actions"><button class="diff-toggle" data-action="diff-view" data-view="both" aria-pressed="' + (view === 'both') + '">전체 diff</button>' +
+          '<button class="diff-toggle" data-action="diff-view" data-view="old" aria-pressed="' + (view === 'old') + '">이전만</button>' +
+          '<button class="diff-toggle" data-action="diff-view" data-view="new" aria-pressed="' + (view === 'new') + '">변경만</button></div>' +
+        '<div class="diff-explanation" id="diff-explanation">' +
+          (fourth
+            ? '네 번째 기록을 시도했습니다. 이전 구조에서는 Rec에 없는 네 번째 칸을 쓰게 됩니다. 새 구조에서는 먼저 포인터 표를 3칸에서 6칸으로 늘리고, 새 주소를 items에 저장한 뒤 기록을 넣습니다.'
+            : '현재 세 칸이 모두 찼습니다. 아래 버튼으로 네 번째 기록을 시도해 두 구조의 차이를 확인하세요.') +
+          (moved ? ' 이번 확장에서는 표의 시작 주소가 0xA600에서 0xA800으로 이동했다고 가정했습니다. Sub 객체 주소는 그대로입니다.' : '') +
+        '</div>' +
+        '<div class="diff-actions"><button class="action" data-action="diff-fourth">' + (fourth ? '네 번째 기록 시도됨' : '네 번째 기록 시도') + '</button>' +
+          '<button class="action secondary" data-action="diff-move">realloc이 표를 옮긴 상황</button><button class="action secondary" data-action="diff-reset">초기화</button></div>' +
+        '<div class="append-scene">' +
+          '<article class="panel"><h3>고정 Rec: 세 번째 뒤</h3><div class="scene-row"><span>Rec 안의 슬롯</span><strong>3개</strong></div>' +
+            '<div class="scene-row"><span>네 번째 기록</span><strong class="' + (fourth ? 'scene-bad' : '') + '">' + (fourth ? 'items[3] · 잘못된 쓰기' : '아직 시도 전') + '</strong></div></article>' +
+          '<article class="panel"><h3>동적 Rec: 네 번째 추가</h3><div class="scene-row"><span>Rec의 items</span><strong>' + dynamicAddr + '</strong></div>' +
+            '<div class="scene-row"><span>별도 표 용량</span><strong>' + dynamicCap + '칸</strong></div>' +
+            '<div class="scene-row"><span>Sub 객체 주소</span><strong class="scene-good">유지됨</strong></div></article>' +
+        '</div>' +
+        '<div class="diff-foot"><span>핵심: 포인터 표의 주소와 표가 가리키는 Sub 주소는 서로 다른 단계예요.</span><span>← / → 로 설명 방식 바꾸기</span></div>' +
+      '</section>';
+    }
+
+    const variants = [renderMap, renderLab, renderDiff];
+
+    function moveHighlight() {
+      const el = items[current];
+      highlight.style.width = el.offsetWidth + 'px';
+      highlight.style.transform = 'translateX(' + el.offsetLeft + 'px)';
+    }
+
+    function mount(i) {
+      stage.innerHTML = '';
+      requestAnimationFrame(function () { stage.innerHTML = variants[i](); });
+    }
+
+    function setActive(i) {
+      if (i < 0 || i >= variants.length) return;
+      current = i;
+      items.forEach(function (el, j) {
+        el.toggleAttribute('data-active', j === i);
+        if (j === i) el.setAttribute('aria-current', 'true');
+        else el.removeAttribute('aria-current');
+      });
+      moveHighlight();
+      const url = new URL(location);
+      url.searchParams.set('v', i + 1);
+      history.replaceState(null, '', url);
+      mount(i);
+    }
+
+    function resetMap() {
+      mapState.count = 0;
+      mapState.capacity = fixedCapacity;
+    }
+
+    stage.addEventListener('click', function (event) {
+      const button = event.target.closest('button[data-action]');
+      if (!button) return;
+      const action = button.dataset.action;
+      if (action === 'map-add') {
+        mapState.count += 1;
+        while (mapState.capacity < mapState.count) mapState.capacity *= 2;
+        if (mapState.capacity > fixedCapacity) mapState.base = 0x5200;
+        mount(current);
+      } else if (action === 'map-reset') {
+        resetMap();
+        mount(current);
+      } else if (action === 'lab-reset') {
+        labState.count = 0;
+        labState.capacity = fixedCapacity;
+        labState.moved = false;
+        mount(current);
+      } else if (action === 'diff-view') {
+        diffState.view = button.dataset.view;
+        mount(current);
+      } else if (action === 'diff-fourth') {
+        diffState.attempted = true;
+        mount(current);
+      } else if (action === 'diff-move') {
+        diffState.moved = true;
+        diffState.attempted = true;
+        mount(current);
+      } else if (action === 'diff-reset') {
+        diffState.attempted = false;
+        diffState.moved = false;
+        diffState.view = 'both';
+        mount(current);
+      }
+    });
+
+    stage.addEventListener('input', function (event) {
+      if (event.target.id !== 'record-range') return;
+      const n = Number(event.target.value);
+      labState.count = n;
+      let capacity = fixedCapacity;
+      while (capacity < n) capacity *= 2;
+      labState.capacity = capacity;
+      labState.moved = capacity > fixedCapacity;
+      const count = document.getElementById('lab-count');
+      const output = document.getElementById('range-output');
+      if (count) count.textContent = String(n);
+      if (output) output.textContent = String(n);
+      const simOutput = document.getElementById('lab-sim-output');
+      if (simOutput) simOutput.innerHTML = renderLabPanels();
+    });
+
+    items.forEach(function (el, i) { el.addEventListener('click', function () { setActive(i); }); });
+    window.addEventListener('resize', moveHighlight);
+    document.addEventListener('keydown', function (event) {
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName) || event.target.isContentEditable) return;
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const num = parseInt(event.key, 10);
+      if (num >= 1 && num <= variants.length) setActive(num - 1);
+      else if (event.key === 'ArrowRight') setActive((current + 1) % variants.length);
+      else if (event.key === 'ArrowLeft') setActive((current - 1 + variants.length) % variants.length);
+    });
+
+    const requestedVariant = parseInt(new URLSearchParams(location.search).get('v'), 10);
+    const initialVariant = requestedVariant >= 1 && requestedVariant <= variants.length ? requestedVariant - 1 : 0;
+    setActive(initialVariant);
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { picker.setAttribute('data-ready', ''); });
+    });
+  </script>
+</body>
+</html>
