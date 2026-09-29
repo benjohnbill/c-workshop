@@ -310,21 +310,21 @@ footer p{color:var(--muted); font-size:14px}
       <div class="oneline">인용은 그때 실제로 쓴 문장 그대로입니다. 오타도 고치지 않았습니다.</div>
     </div>
   </div>
-  <p>각 장은 세 칸으로 나뉩니다. <span class="v half">생각</span>은 그때 세운 가설, <span class="v no">흔든 것</span>은 그 가설을 흔든 반례나 증거, <span class="v ok">고친 그림</span>은 그 뒤에 남은 이해입니다. 가설 중 일부는 맞았고, 그것도 그대로 적었습니다.</p>
+  <p>각 장은 세 칸으로 나뉩니다. <span class="v half">These</span>는 그때 세운 가설, <span class="v no">Antithese</span>는 그 가설을 흔든 반례나 증거, <span class="v ok">Synthese</span>는 그 뒤에 남은 이해입니다. 가설 중 일부는 맞았고, 그것도 그대로 적었습니다.</p>
 
   <!-- ① -->
   <div class="chapter">
     <div class="kicker">① 빌드부터</div>
     <h3 class="dh">Makefile은 파일이 다 모인 뒤에 만드는 줄 알았다</h3>
-    <div class="step"><span class="tag think">생각</span><div class="body">
+    <div class="step"><span class="tag think">These</span><div class="body">
       <blockquote class="said">'일반적인 쉘 프로그램을 만드는 과정'을 따라가고 싶어. 실행파일 만들고 bin 폴더로 집어넣기 위한 과정 자체를 물어보는 것 같기는 한데, 보통 거기서 makefile을 사용하는게 일반이라고 한다면, 그대로 할게.</blockquote>
       <blockquote class="said">c라는 명령어는 기본적으로 dbg를 고려해서 -O0로 돌리긴 하거든? 근데, shell 프로그램을 -O0로 실행파일을 만드는게 맞을까? 일반적으로 O3가 O2로 돌린다고 알고 있어서.</blockquote>
       <blockquote class="said">뭔가 파일 형태들이 다 갖춰지고서 make로 묶는다고 보긴 했는데, 오히려 일반적으로 개발 workflow에서는 make를 만들어두고 파일이나 모듈이 생기면 추가하는 형태인가?</blockquote>
     </div></div>
-    <div class="step"><span class="tag shake">흔든 것</span><div class="body">
+    <div class="step"><span class="tag shake">Antithese</span><div class="body">
       <p>파일이 두 개가 되는 순간부터 컴파일할 명령이 필요합니다. module을 하나 떼어 낼 때마다 컴파일해 봐야 "떼어 낸 결과가 제대로 동작하는가"를 확인할 수 있습니다. 파일을 다 모은 뒤에 처음 컴파일하면, 오류가 나도 어느 분리 단계에서 생겼는지 구분할 수 없습니다.</p>
     </div></div>
-    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+    <div class="step"><span class="tag fix">Synthese</span><div class="body">
       <ul>
         <li><strong>Makefile은 먼저 최소한으로 만들고, 파일이 생길 때마다 늘립니다.</strong> 처음에는 target 하나와 source 하나로 시작합니다.</li>
         <li><strong>build는 두 종류입니다.</strong> 개발과 검증에는 <code>-O0 -g</code>를 씁니다. gdb에서 변수가 <code>&lt;optimized out&gt;</code>으로 사라지지 않고, valgrind의 줄 번호도 정확합니다. 배포와 설치에는 <code>-O2</code>를 씁니다. Debian, Fedora, Linux kernel의 기본값입니다. <code>-O3</code>는 코드가 커지고 항상 빠르지도 않아서, 측정으로 이득이 확인될 때 고릅니다.</li>
@@ -337,16 +337,16 @@ footer p{color:var(--muted); font-size:14px}
   <div class="chapter">
     <div class="kicker">② 설계도가 없다는 불안</div>
     <h3 class="dh">명세서를 받아 쓰면 만드는 능력이 사라질 것 같았다</h3>
-    <div class="step"><span class="tag think">생각</span><div class="body">
+    <div class="step"><span class="tag think">These</span><div class="body">
       <blockquote class="said">사실 솔직히 말하면, 파일 설계 명세부터 나한테는 명확하지가 않긴 하거든? 왜냐하면, 이것도 이전 세션의 claude code한테 stage 거듭함에 따라 파일이 는다고 듣기만 해서.</blockquote>
       <blockquote class="said">뭔가 api 명세/아키택처 등이 명확하게 나한테 개념잡힌 채로 작업하는게 아니라서 물어보는 거야. .. 그렇다고, 이게 단순히 너한테 명세서 뽑아달라고 하는 것도 내가 나중에 그것을 만들거나 지시할 수 있는 능력이 박탈당하는 것 같기도 하고.</blockquote>
     </div></div>
-    <div class="step"><span class="tag shake">흔든 것</span><div class="body">
+    <div class="step"><span class="tag shake">Antithese</span><div class="body">
       <p>막힌 이유는 "앞으로 파일이 늘어난다"는 말만 듣고, 그 최종 모습을 지금 설계해야 한다고 느꼈기 때문이었습니다. 실제로 Stage 7 brief가 요구하는 파일 설계는 "기록 관리와 명령 실행을 별도 source module로 분리"라는 한 줄뿐이었습니다. 파일은 미리 정한 설계도대로 늘어나지 않고, <strong>새 변경 이유가 생길 때</strong> 늘어납니다.</p>
       <p>그다음에는 방향을 스스로 잡았습니다.</p>
       <blockquote class="said">일단, 당장에 든 느낌으로는, '어떠한 명령어 / 어떠한 기능을 만들고 싶은 지'가 명확해야 하는 것 같아. 단순히 stage 단위로 나눈거 말고, 정말 내가 만들려고 하는게 뭔지를 스스로 알아야 할 것 같아서. 그리고 그러한 쉘 명령어나 기능 들을 내가 확인한 이후에야, 구체적으로 '프론트엔드/백엔드' 이런 느낌으로 역할을 나누듯이 여러 모듈을 구성할 수 있을 것 같아.</blockquote>
     </div></div>
-    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+    <div class="step"><span class="tag fix">Synthese</span><div class="body">
       <p><span class="v ok">맞음</span>목적지를 알아야 경계를 제자리에 그을 수 있습니다. 목적지는 이미 study-cli README에 Stage 10까지의 계약으로 있었습니다.</p>
       <p><span class="v half">보완</span>목적지를 안다고 module을 지금 다 만들 필요는 없습니다. <strong>목적지는 한 번에 전체를 파악하고, 경계는 큰 선 하나만 먼저 긋고, 파일은 stage마다 필요할 때 만듭니다.</strong></p>
       <p>능력을 잃지 않는 방법으로는 README를 요약받지 않고 <strong>내 말로 다시 쓰기</strong>로 했습니다. 그 결과가 DESIGN.md이고, README는 계약을 대조할 때만 봅니다.</p>
@@ -359,20 +359,20 @@ footer p{color:var(--muted); font-size:14px}
   <div class="chapter">
     <div class="kicker">③ 명령이 무엇을 하는가</div>
     <h3 class="dh">add는 스스로 설계했고, list와 total은 끝까지 헷갈렸다</h3>
-    <div class="step"><span class="tag think">생각</span><div class="body">
+    <div class="step"><span class="tag think">These</span><div class="body">
       <blockquote class="said">터미널을 입력할 때의 시간이 기본으로 들어가고, 유저가 명시하는 게 있을 때만 공부 로그에 date를 덮어씌우는 식으로 하는 게 맞다고 봐. 공부 기록이라는 건 딱 그 순간에 내가 얼마나 했는지 적는 거잖아. 그런 용도라면 시간은 그때그때 계산해 주고, 나중에 GitHub 잔디처럼 날짜별 기록이나 공부 로그를 남길 때 그 시간이 정규화 소스가 되지 않을까 싶거든.</blockquote>
       <blockquote class="said">• list 명령어: 특정 날짜 범위를 주는 건지, 아니면 subject를 명시했을 때 해당 subject의 모든 리스트가 나오는 건지 잘 모르겠음<br>• total 명령어: 마찬가지로 모호함<br>• edit [id], remove [id]: 정확히 어떻게 동작하도록 구현하려는 건지 불분명함<br><br>결국 이게 하나의 큰 틀을 잡고 가야 하는 제품 설계 같은데, 너 생각은 어때?</blockquote>
     </div></div>
-    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+    <div class="step"><span class="tag fix">Synthese</span><div class="body">
       <p><span class="v ok">맞음</span>add의 date 설계는 README를 보지 않고 "기록은 그 순간을 적는 것"이라는 용도에서 끌어냈는데, 계약과 같았습니다. 차이는 하나였습니다. 계약은 시각이 아니라 <strong>날짜(<code>YYYY-MM-DD</code>)</strong>만 저장합니다. 잔디밭도 하루가 한 칸이라 날짜로 충분합니다.</p>
       <p>list, total, edit, remove가 흐릿했던 이유는 틀이 없어서가 아니라 <strong>관점 하나가 빠져 있어서</strong>였습니다. 명령을 따로따로 보지 않고 "기록 하나에 대한 조작"으로 보는 관점, 즉 CRUD입니다. 그리고 사용법의 대괄호 <code>[--date YYYY-MM-DD]</code>는 "생략할 수 있다"는 뜻이라서, 옵션 없이 쓰는 것도 한쪽만 쓰는 것도 모두 유효하다는 표기법도 몰랐습니다.</p>
     </div></div>
-    <div class="step"><span class="tag think">생각</span><div class="body">
+    <div class="step"><span class="tag think">These</span><div class="body">
       <blockquote class="said">list하고 total이라는 이름 자체가 뭔가 리스트업을 해서 개괄을 보는 느낌인 지라, 사실 나한테는 잘 와닿지가 않아서.</blockquote>
       <blockquote class="said">total은 subject별 총 공부시간 단위 minutes를 합쳐주는 조회 역할인건가? 과목별 시간 &amp; 총 시간 식으로 보여주되, 거기서 추가 flag를 바탕으로 특정 과목만 볼 수 있는 느낌이고? 그리고 list는 그동안의 로그 raw data를 보여주는 단위인건가?</blockquote>
       <blockquote class="said">일단 나는 total이 최소한 고른 과목의 총 minutes, 모든 과목의 총 minutes &amp; 모든 minutes(과목 불문)의 합. 이렇게 디ㅗ어야 한다고 보긴 하거든? 맞지 않아?</blockquote>
     </div></div>
-    <div class="step"><span class="tag shake">흔든 것</span><div class="body">
+    <div class="step"><span class="tag shake">Antithese</span><div class="body">
       <p>계약의 <code>total</code>은 과목별로 나눠 보여 주지 않고, 고른 기록의 합을 <strong>숫자 하나</strong>로 출력합니다. 원했던 세 가지를 계약과 맞춰 보면 두 가지는 이미 있었습니다.</p>
       <div class="tbl"><table>
         <tr><th>원한 것</th><th>계약에서 하는 방법</th></tr>
@@ -381,7 +381,7 @@ footer p{color:var(--muted); font-size:14px}
         <tr><td>과목별 총 minutes를 한꺼번에</td><td>없음 → 확장 후보 (group by)</td></tr>
       </table></div>
     </div></div>
-    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+    <div class="step"><span class="tag fix">Synthese</span><div class="body">
       <p><span class="v ok">맞음</span>list는 쌓인 기록을 행 그대로 보여 주고, 고를 수 있습니다. filter는 날짜 하루와 과목 두 가지입니다.</p>
       <p><span class="v half">절반</span>total이 과목별 합계를 보여 준다는 부분은 계약보다 한 걸음 나간 생각이었습니다. 그 기능은 <code>total</code>의 기본 출력을 바꾸지 않고 따로 추가합니다. 계약이 <code>Total: N minutes</code> 한 줄을 고정해 두었고, 출력 모양이 하나로 고정돼야 다른 script가 결과를 읽어 쓸 수 있기 때문입니다. 잔디밭을 그리는 코드가 날짜마다 <code>total --date</code>를 불러 숫자 하나를 받는 경우를 떠올리면 이유가 분명해집니다.</p>
       <p>TUI 같은 아이디어가 자꾸 떠오르는 것도 문제가 아니었습니다.</p>
@@ -394,18 +394,18 @@ footer p{color:var(--muted); font-size:14px}
   <div class="chapter">
     <div class="kicker">④ 기록 하나와 ID</div>
     <h3 class="dh">Rec이 기록마다 하나씩 있다고 생각했다</h3>
-    <div class="step"><span class="tag think">생각</span><div class="body">
+    <div class="step"><span class="tag think">These</span><div class="body">
       <blockquote class="said">같은 날 같은 과목을 여러 번 기록할 수 있기 때문인거지? 그 때문에 ID를 바탕으로 입력마다의 구분을 주려는 것이고. 이렇게 생각하면, 해시테이블 구조(map)를 쓸 수밖에 없겠구나? 자료구조 기준으로 본다면?</blockquote>
     </div></div>
-    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+    <div class="step"><span class="tag fix">Synthese</span><div class="body">
       <p><span class="v ok">맞음</span>기록 내용 안에는 기록 하나를 유일하게 가리킬 값이 없습니다. date, subject, minutes, note가 모두 같은 기록도 두 개 생길 수 있습니다. 그래서 내용과 무관한 번호를 붙입니다.</p>
       <p><span class="v no">틀림</span>"쓸 수밖에 없다"까지는 가지 않습니다. <strong>ID가 유일해야 한다</strong>는 데이터 요구와 <strong>hash table을 쓴다</strong>는 성능 선택은 다른 문제입니다. 유일한 key가 있어도 배열을 처음부터 훑으면 찾을 수 있고, hash table은 <code>list</code>에 필요한 ID 오름차순을 보존하지 않습니다.</p>
     </div></div>
-    <div class="step"><span class="tag think">생각</span><div class="body">
+    <div class="step"><span class="tag think">These</span><div class="body">
       <p>배열 안에서 ID가 어떤 순서로 놓이는지 묻는 질문에 답하다가, 생각이 엉킨 지점을 스스로 발견했습니다.</p>
       <blockquote class="said">일종의 stack 느낌으로 되는거 아닌가? 기록이 r-&gt;count되는 것처럼, r-&gt;list가 차곡차곡 쌓인다고 생각하긴 했는데. .. 잠깐만. 근데. 생각해보면, 뭔가 이상한거 같기도. 이러면 Rec 구조체인 r은 한 개만 있는 건가? 원래는, r이 각 '기록마다 존재'하는 구도였는데. 뭔가. r-&gt;list에서 그 list가 가리키는 주소가 실제 Sub *s를 값으로 들고있다고 생각하니까 ,뭔가 나도 생각이 꼬이는거 같은데.</blockquote>
     </div></div>
-    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+    <div class="step"><span class="tag fix">Synthese</span><div class="body">
       <p>r은 process 하나에 한 개뿐입니다. <code>main</code>에서 <code>new_record()</code>는 한 번만 호출됩니다. 기록마다 하나씩 생기는 것은 <code>Sub</code>입니다.</p>
       <figure>
         <div class="fig-title dh"><code>C 30 OS 45 C 10</code>을 넣었을 때의 heap</div>
@@ -452,11 +452,11 @@ footer p{color:var(--muted); font-size:14px}
         <p>그림의 상자 하나가 malloc 한 번입니다. 개수를 맞힐 수 있다는 것은 각 상자가 언제 생기고 누구의 소유인지 잡혔다는 뜻입니다.</p>
       </div></details>
     </div></div>
-    <div class="step"><span class="tag think">생각</span><div class="body">
+    <div class="step"><span class="tag think">These</span><div class="body">
       <p>개수는 맞혔지만, 이어서 디스크까지 그림을 넓히다가 다시 어긋났습니다.</p>
       <blockquote class="said">내가 혼란에 빠졌던 건, "메인 한 번"이 Rec 1번을 생성하는 건데, 그렇다면 실제 기록 상에서는 여러 Rec가 기록의 형태로 디스크에 존재할 것이고, 그들을 한꺼번에 읽기-수정-갱신 하는 과정이었던 것 같네. 즉, Rec 자체는 기본적으로 기록이 쌓일 때마다 존재하는ㄱ ㅓㅅ이고, 그들을 구분하는 기준점이 ID(Date 순서)인 것이지. r-&gt;count 처럼 한개씩 증가할 때마다 부여되는. 맞지?</blockquote>
     </div></div>
-    <div class="step"><span class="tag shake">흔든 것</span><div class="body">
+    <div class="step"><span class="tag shake">Antithese</span><div class="body">
       <p>세 군데가 어긋나 있었습니다.</p>
       <ol>
         <li><strong>디스크에 있는 것은 여러 Rec이 아니라 파일 하나 안의 여러 행입니다.</strong> 실행 한 번은 "파일 전체를 읽어 Rec 1개를 만든다(행마다 Sub 1개) → 메모리에서 조작한다 → 변경 명령이면 파일 전체를 다시 쓴다 → 해제하고 끝난다"로 흘러갑니다. "한꺼번에 읽기-수정-갱신"이라는 그림 자체는 맞았습니다. 대상이 Rec 여러 개가 아니라 Rec 하나 안의 Sub들일 뿐입니다.</li>
@@ -468,12 +468,12 @@ footer p{color:var(--muted); font-size:14px}
         <p>새 ID 4는 맞았습니다. count는 마지막 add까지 반영하면 <strong>3</strong>이고, 2는 remove 직후의 값입니다. 결론은 그대로입니다. remove가 한 번이라도 일어나면 count와 ID는 서로 어긋납니다.</p>
       </div></details>
     </div></div>
-    <div class="step"><span class="tag think">생각</span><div class="body">
+    <div class="step"><span class="tag think">These</span><div class="body">
       <p>배열 안의 ID가 오름차순이라는 것을 확인한 뒤, hash table 없이 ID 4를 찾는 방법을 두 번 제안했습니다.</p>
       <blockquote class="said">remove한 ID를 다 알고 있으면, '3이 없으니까 3칸만 가자' 이런 식으로 판단이 가능할 것 같으넫. 이런 구조가 맞아?</blockquote>
       <blockquote class="said">아. 여기서 BST 개념이 나오는 거구나. 생각해 보니까, 파일트리에서 특정 무언가를 찾을 때 BST를 쓴다고 들었어. log N의 시간복잡도가 압도적이라서.</blockquote>
     </div></div>
-    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+    <div class="step"><span class="tag fix">Synthese</span><div class="body">
       <p><span class="v half">절반</span>지운 ID 목록으로 index를 계산하는 방법은 성립하지만 비용이 둘 붙습니다. 파일에는 지운 ID가 저장되지 않으니 그 목록을 새 상태로 저장하고 맞춰야 하고, "4보다 작은 지운 ID가 몇 개인가"를 세는 일도 결국 또 하나의 탐색입니다. 문제를 없앤 게 아니라 다른 목록으로 옮긴 것이었습니다.</p>
       <p><span class="v half">절반</span>"가운데를 보고 절반을 버린다"는 아이디어는 맞았지만 이름이 달랐습니다. 정렬된 <strong>배열</strong>에서 가운데를 보고 범위를 반씩 줄이는 것은 이진 탐색(binary search)입니다. BST는 node마다 자식 pointer를 가진 <strong>tree 자료구조</strong>입니다. 파일 시스템이 주로 쓰는 것은 node 하나에 key를 여러 개 담아 디스크 block 하나로 최대한 많이 걸러 내는 B-tree 계열입니다.</p>
       <div class="tbl"><table>
@@ -490,10 +490,10 @@ footer p{color:var(--muted); font-size:14px}
   <div class="chapter">
     <div class="kicker">⑤ 검사는 어디에</div>
     <h3 class="dh">입력 지점에서 거르면 충분하다고 생각했다</h3>
-    <div class="step"><span class="tag think">생각</span><div class="body">
+    <div class="step"><span class="tag think">These</span><div class="body">
       <blockquote class="said">minutes하고 subject는 입력을 받았을 때 '유효한 지'를 검사하는 것이니까, 명령 실행쪽이지 않을까? 그렇게 잘 걸러진 기록들을 나중에 조회/수정/삭제하는게 기록 관리 쪽이라고 생각하거든?</blockquote>
     </div></div>
-    <div class="step"><span class="tag shake">흔든 것</span><div class="body">
+    <div class="step"><span class="tag shake">Antithese</span><div class="body">
       <p>Stage 8부터 기록은 파일에서도 들어옵니다. 누군가 파일을 손으로 고쳐 <code>C&#9;2000</code>이라는 행이 생기면, 이 행도 걸러야 합니다. 처음에는 이것을 edit 명령으로 알아들었습니다.</p>
       <blockquote class="said">거꾸로 파일을 수정할 때에 그 수정하려는 수치(혹은 과목)가 유효한 지 검사하면 되는거 아냐? 즉, 입력하는 순간 &amp; Update를 하는 순간에만 검사 함수가 들어가면 되지 않냐고.</blockquote>
       <div class="tbl"><table>
@@ -503,11 +503,11 @@ footer p{color:var(--muted); font-size:14px}
       </table></div>
       <p>Stage 8 brief의 Done when에도 "파일 중간에 잘못된 시간을 넣어 전체 결과가 거부되는지 확인"이 있습니다. 검사가 필요한 지점은 add 입력, edit 입력, <strong>파일 읽기</strong> 세 곳이고, 세 번째는 argv와 관계가 없습니다.</p>
     </div></div>
-    <div class="step"><span class="tag think">생각</span><div class="body">
+    <div class="step"><span class="tag think">These</span><div class="body">
       <p>상한이 1440에서 600으로 바뀌면 무엇이 바뀌는지를 따져 보았습니다.</p>
       <blockquote class="said">'유효한 minutes의 정의'가 바뀌게 되는 셈이지. 즉, 그렇게 된다면, 내가 생각하기엔 사실 CRUD를 담당하는 녀석들 전부가 바뀌어야 하는 것 같아. 정확히 말하면, 각 core에 들어있는 에러코드 조건분기에서 판단값이 바뀌겠지. ... 그 논리대로라면 interface는 "무엇을 보여주는가"가 바뀌는 느낌이라고 생각하긴 했는데, 만약 그렇다면 interface module은 fprintf()말고 뭘 하는건가 싶은 생각이 들어ㅓ.</blockquote>
     </div></div>
-    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+    <div class="step"><span class="tag fix">Synthese</span><div class="body">
       <p><span class="v ok">맞음</span>상한 변경은 "유효한 기록의 정의"가 바뀐 것이므로 core의 변경입니다.</p>
       <p><span class="v no">틀림</span>CRUD 전부가 바뀌면 안 됩니다. 조건분기가 add와 edit에 흩어져 있으면 전부 고쳐야 하고, 하나라도 빠뜨리면 버그가 됩니다. 그래서 검사를 core 안의 <strong>함수 하나</strong>로 두고 add, edit, 파일 읽기가 그 함수를 호출합니다. R과 D는 minutes를 새로 받지 않으니 검사할 일이 없습니다.</p>
       <p>interface는 fprintf만 하지 않습니다. 사용자와 core 사이의 번역기입니다.</p>
@@ -525,11 +525,11 @@ footer p{color:var(--muted); font-size:14px}
   <div class="chapter">
     <div class="kicker">⑥ 왜 module로 나누나</div>
     <h3 class="dh">함수로 이미 나눴는데 파일까지 나눌 이유가 보이지 않았다</h3>
-    <div class="step"><span class="tag think">생각</span><div class="body">
+    <div class="step"><span class="tag think">These</span><div class="body">
       <blockquote class="said">지금 CRUD라는 관점으로 본다면, 어떻게 모듈화를 해야 할 지 감이 잘 안 잡혀. C, R, U, D가 각각 하나의 모듈을 차지하지는 않을거 아냐. ... 사실, 아직도 '함수 단위'와 '모듈 단위'로 나누는 기준점을 명확하게 몰라서 하는 말이야.</blockquote>
       <blockquote class="said">지금 practice6.c같은 경우에도 그런 로직적인 부분들은 별도 함수로 빼놓고, main()에서 그것들을 차례차례 실행하는 느낌이 있잖아? 이런 점에서 main()이 interface이고 core가 개별적인 함수들이라고 볼 수 있지. 이런 점에서 "왜 모듈을 분리해야 하는가"가 궁금한 거야. 단순히 "기능적인 구분이나 인간이 보기 좋으려고"는 아닐 거 아냐.</blockquote>
     </div></div>
-    <div class="step"><span class="tag shake">흔든 것</span><div class="body">
+    <div class="step"><span class="tag shake">Antithese</span><div class="body">
       <p>처음 받은 답은 네 가지 기계적 이유였습니다. 경계를 compiler가 지켜 준다, <code>static</code>으로 파일 단위 비공개를 만든다, 다른 <code>main</code>과 결합할 수 있다, 바뀐 파일만 다시 컴파일한다. 와닿지 않았습니다.</p>
       <blockquote class="said">솔직하게 얘기하면, 지금 와닿지는 않거든? 뭔가 더 추상화를 한다는 개념보다는, 느낌상 로직이나 파일과 관련된 이야기 외부의 이야기인 느낌인 지라. .. 아닌가?</blockquote>
       <p>이 말이 "header가 왜 선언만 담나"라는 질문으로 잘못 읽혀서, 분할 컴파일 과정을 먼저 설명받았습니다. 질문과는 엇갈렸지만, 뒤의 이해를 받치는 바닥이 되었으므로 그림으로 남깁니다.</p>
@@ -560,10 +560,10 @@ footer p{color:var(--muted); font-size:14px}
       <blockquote class="said">헤더가 왜 선언만 담는지를 물어본게 아니야. 내 말은 "왜 그런 노력을 해가면서까지 모듈 분리를 해야 하냐"였던 거긴 했어. ... 이 내용들이 단순히 추상화나 로직의 깔끔함과 별개의 내용같다는 말을 한 거지.</blockquote>
       <p>이 관찰은 정확했습니다. <strong>module 분리는 로직을 바꾸지 않습니다.</strong> 파일이 하나든 셋이든 프로그램은 똑같이 동작하고, 로직의 깔끔함은 함수를 잘 나누는 것만으로 대부분 얻습니다. module 분리는 그 깔끔함이 <strong>시간이 지나도 유지되게 하는 장치</strong>입니다. "main은 기록의 내부 모양을 모른다"는 추상화는 약속이고, 한 파일 안에서 그 약속을 지키는 것은 사람의 주의력뿐입니다. 급하게 기능을 붙일 때 <code>main</code>에서 <code>r-&gt;list[i]</code>를 직접 만지는 게 가장 빠른 길이 되고, 한 번 새기 시작하면 경계는 이름만 남습니다.</p>
     </div></div>
-    <div class="step"><span class="tag think">생각</span><div class="body">
+    <div class="step"><span class="tag think">These</span><div class="body">
       <blockquote class="said">'기능적인 분리 및 함수 설정'만 잘 해놓으면, 한 파일로 만들어도 된다는 뜻으로 들리기도 하거든. 실제로 그런 경우가 존재할 것 같기도 하고. 솔직히, 당장 내가 드는 느낌으로는 "내부 코드를 완벽하게 격리된 공간(선언만 공유하고)을 하나 만들겠다."라는 뜻으로 들리거든. 그럼으로써 전처리기나 linker라는 장치를 오히려 더 거쳐야 하고. 그 메인 효용은 가독성이나 기능별 분리 정도로 보여서. 이게, HTTP 통신에서처럼 SQL DB/python backend/javascript frontend 이런 느낌으로 언어나 프레임워크 자체가 달라버리는 건 아니니까. 혹시, 내 말이 틀렸을까/</blockquote>
     </div></div>
-    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+    <div class="step"><span class="tag fix">Synthese</span><div class="body">
       <p><span class="v ok">맞음</span><strong>한 파일이어도 됩니다.</strong> SQLite는 수십 개의 source를 <code>sqlite3.c</code> 하나로 합친 amalgamation을 배포하고, stb 같은 library는 header 파일 하나로 되어 있습니다.</p>
       <p><span class="v ok">맞음</span><strong>격리된 공간을 만든다</strong>는 표현이 정확합니다.</p>
       <p><span class="v ok">맞음</span><strong>HTTP 구조와 다르다</strong>는 관찰이 핵심이었습니다. DB, backend, frontend는 process나 기계나 언어가 물리적으로 달라서 경계가 저절로 생깁니다. C의 module은 같은 process, 같은 메모리 안에 있어서 경계가 저절로 생기지 않고, 파일 분리와 header로 <strong>인위적으로</strong> 만듭니다. "노력"이라고 느낀 것이 바로 이 인위성입니다.</p>
@@ -576,10 +576,10 @@ footer p{color:var(--muted); font-size:14px}
   <div class="chapter">
     <div class="kicker">⑦ main이 둘 이상인 이유</div>
     <h3 class="dh">core 하나에 입구가 여러 개</h3>
-    <div class="step"><span class="tag think">생각</span><div class="body">
+    <div class="step"><span class="tag think">These</span><div class="body">
       <blockquote class="said">이 부분만 명확하게 잡히면 고개를 끄덕이고 넘어갈 수 있을 것 같아. "두 개 이상의 main이 왜 필요할까?"</blockquote>
     </div></div>
-    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+    <div class="step"><span class="tag fix">Synthese</span><div class="body">
       <p>"main이 두 개"는 <strong>같은 core를 쓰는 프로그램이 둘 이상</strong>이라는 뜻입니다. 프로그램 하나에는 <code>main</code>이 정확히 하나라서, 쓰는 프로그램이 늘면 <code>main</code>도 늘어납니다.</p>
       <figure>
         <div class="fig-title dh">core는 한 벌, 입구는 여러 개</div>
@@ -611,11 +611,11 @@ footer p{color:var(--muted); font-size:14px}
       </figure>
       <p>셋 중 가장 가까운 것은 Stage 10의 테스트입니다. <code>./study</code>를 shell에서 실행하면 보이는 것은 stdout, stderr, exit code뿐입니다. 그런데 Stage 10은 배열 확장과 deep copy를 검증하라고 요구합니다. deep copy를 확인하려면 버퍼에 <code>"C"</code>를 넣고 add한 다음, 그 버퍼를 <code>"X"</code>로 덮어쓰고, 기록의 subject가 여전히 <code>"C"</code>인지 봐야 합니다. argv로는 두 번째 단계를 할 방법이 없습니다.</p>
     </div></div>
-    <div class="step"><span class="tag think">생각</span><div class="body">
+    <div class="step"><span class="tag think">These</span><div class="body">
       <p>capacity 확장을 <code>./study</code>의 출력만으로 검증할 수 있느냐는 질문에 이렇게 답했습니다.</p>
       <blockquote class="said">지금 관점에서는 당연히 realloc()으로 배여링 커진다는 사실을 어렵지 않게 알 수 있지. 왜냐하면, 그 Sub_add() 함수가 r-&gt;capacity하고 r-&gt;count를 바탕으로 직접 카운트를 해주고, 그 이후에 perror()를 송출해주니까. ... 만약에 모듈화를 한다고 하면, Sub_add가 interface로 가되, "r-&gt;capacity하고 r-&gt;count가 같아지는 지 판단하기 위해, core로 Sub_add 판정 함수를 보내라"라는 명령어가 짧게 나오고, ... 음.. 뭔가 함수안에 함수처럼 이해했는데, 이런 이해가 맞아?</blockquote>
     </div></div>
-    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+    <div class="step"><span class="tag fix">Synthese</span><div class="body">
       <p><span class="v no">틀림</span><strong><code>Sub_add</code>는 통째로 core에 갑니다.</strong> capacity 검사, realloc, malloc, 복사가 모두 "기록을 어떻게 담는가"라는 core의 비밀입니다. interface는 <code>Sub_add(r, argv[i - 1], tmp)</code> 한 줄로 호출만 합니다. 함수 안의 함수가 아니라, 다른 파일에 있는 함수를 부르는 것뿐입니다.</p>
       <p><span class="v no">틀림</span><strong>코드를 읽어서 아는 것과 실행 결과로 확인하는 것은 다릅니다.</strong> <code>perror</code>는 realloc이 실패할 때만 출력되므로, 배열이 성공적으로 커지면 <code>./study</code>는 아무 흔적도 남기지 않습니다. 출력만으로는 capacity가 20으로 늘었는지 처음부터 100이었는지 구분할 수 없습니다. 테스트의 <code>main</code>은 기록을 11개 추가한 뒤 <code>r-&gt;capacity</code>가 20인지 직접 읽습니다.</p>
       <details class="predict"><summary>예측해 보기: 두 번째 main이 없으면 검증할 수 없는 것을 하나 더 떠올려 보면?</summary><div>
@@ -712,37 +712,21 @@ footer p{color:var(--muted); font-size:14px}
 
   <div class="block">
     <h3 class="dh">Logseq에 남긴 요약</h3>
-    <p>세션이 끝날 무렵 "왜 module로 나누나"를 Logseq에 직접 정리했습니다. 처음 적은 판을 그대로 두고, 검토에서 고친 판을 아래에 붙입니다.</p>
-    <div class="codebox"><div class="cap"><span>처음 적은 판</span><span>그대로 옮김</span></div><pre><span class="ln">- ### Understanding Module Structure</span>
-<span class="ln">    - The Reasond of Moduling</span>
-<span class="ln markbad">        - Double Main()</span>
-<span class="ln markbad">            - Capsulizing(hiding core logic)</span>
-<span class="ln">            - Borrowing Logic in different interface</span>
-<span class="ln">    - Example in my Project(Study Log)</span>
-<span class="ln">        - Interface(Frontend)</span>
-<span class="ln">        - Core(Backend)</span>
-<span class="ln markbad">            - ex&gt; SQlite3.c should be implementing, during Chrome &amp; Python</span>
-<span class="ln markbad">            - ex&gt; Because of moduling process, SQlite3.c doesn't remain just a shell programm.</span></pre></div>
-    <ul>
-      <li><strong>계층</strong>: 캡슐화와 main이 여러 개인 것은 서로 독립된 이유 두 개입니다. 캡슐화가 main이 여러 개인 데서 나오지 않습니다.</li>
-      <li><strong>SQLite의 자리</strong>: study의 예가 아니라 "main이 여러 개" 이유의 실제 사례입니다.</li>
-      <li><strong>Frontend/Backend 비유</strong>: HTTP와 달리 같은 process, 같은 메모리 안이라서 경계를 인위적으로 만든다는 단서가 필요합니다.</li>
-      <li><strong>용어</strong>: Moduling → Modularizing, Capsulizing → Encapsulation, Double → Multiple.</li>
-    </ul>
-    <div class="codebox"><div class="cap"><span>고친 판</span><span>초록 줄이 옮기거나 더한 부분</span></div><pre><span class="ln">- ### Understanding Module Structure</span>
+    <p>세션이 끝날 무렵 "왜 module로 나누나"를 Logseq에 직접 정리하고, 검토를 거쳐 고친 판입니다.</p>
+    <div class="codebox"><div class="cap"><span>Logseq</span><span>Understanding Module Structure</span></div><pre><span class="ln">- ### Understanding Module Structure</span>
 <span class="ln">    - Reasons for Modularizing</span>
-<span class="ln mark">        - Encapsulation (hiding core logic)</span>
-<span class="ln mark">            - The header shows only declarations, so the compiler guards the boundary</span>
-<span class="ln mark">            - Same process, same memory: the boundary is artificial (unlike HTTP layers)</span>
-<span class="ln mark">        - Multiple main() (two or more programs share one core)</span>
+<span class="ln">        - Encapsulation (hiding core logic)</span>
+<span class="ln">            - The header shows only declarations, so the compiler guards the boundary</span>
+<span class="ln">            - Same process, same memory: the boundary is artificial (unlike HTTP layers)</span>
+<span class="ln">        - Multiple main() (two or more programs share one core)</span>
 <span class="ln">            - Borrowing logic in a different interface</span>
-<span class="ln mark">            - ex&gt; Chrome, Android, and Python link sqlite3.c</span>
-<span class="ln mark">            - ex&gt; The CLI main() lives in shell.c, so sqlite3.c does not remain just a shell program</span>
+<span class="ln">            - ex&gt; Chrome, Android, and Python link sqlite3.c</span>
+<span class="ln">            - ex&gt; The CLI main() lives in shell.c, so sqlite3.c does not remain just a shell program</span>
 <span class="ln">    - Example in my Project (Study Log)</span>
 <span class="ln">        - Interface (like a frontend): main.c</span>
 <span class="ln">        - Core (like a backend): record.c</span>
-<span class="ln mark">        - Storage: from Stage 8</span>
-<span class="ln mark">        - Other main() for this core: test_core (Stage 10), study-tui (candidate)</span></pre></div>
+<span class="ln">        - Storage: from Stage 8</span>
+<span class="ln">        - Other main() for this core: test_core (Stage 10), study-tui (candidate)</span></pre></div>
   </div>
 </section>
 
