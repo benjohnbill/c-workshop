@@ -1,6 +1,6 @@
 ---
 scope: Stage 2 retrospective and preserved exercise
-truth: fp_practice4.c is the original completed session artifact
+truth: practice2-1.c is the original completed session artifact
 updated: 2026-09-22
 ---
 
@@ -24,4 +24,4 @@ updated: 2026-09-22
 변경 후 두 번째: 4
 ```
 
-원본 구현은 `fp_practice4.c`에 있어요.
+원본 구현은 `practice2-1.c`에 있어요.

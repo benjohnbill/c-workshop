@@ -1,18 +1,18 @@
 ---
 scope: C Workshop repository overview
 truth: CURRICULUM.md defines current stages and completion gates
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # C Workshop
 
-C 문법을 따로 암기하는 저장소가 아니라, 서로 다른 프로그램을 빈 파일에서
-설계하고 검증하며 C의 포인터·소유권·자료구조에 익숙해지는 작업장이에요.
+구조체·함수 포인터·메모리 소유권을 연습하고, 하나의 `study` CLI를 단계적으로
+만들며 C에 익숙해지는 작업장입니다. 각 버전을 터미널에서 직접 사용해 검증합니다.
 
 ## Goals
 
-- **Minimum — Stage 8:** 여러 구조체, 함수 포인터, 동적 메모리와 수명을
-  결합한 프로그램을 직접 설계해요.
+- **Minimum — Stage 8:** 기록을 저장하고 다른 실행에서 다시 읽는 프로그램을
+  만들고, 구조체·메모리·파일의 수명을 설명합니다.
 - **Target — Stage 10:** 터미널에서 실제로 사용하는 `study` CLI를 완성해요.
 - **Extra — Stage 12:** malloc-lab과 PintOS에서 다시 만날 표현을 작은 모형으로
   먼저 다뤄요.
@@ -24,6 +24,8 @@ C 문법을 따로 암기하는 저장소가 아니라, 서로 다른 프로그�
 
 각 단계 폴더의 `README.md`를 문제 명세로 읽고, 소스 파일과 필요한 모듈은
 직접 만들어요. 단계별 문서에는 정답 코드와 함수 원형이 들어 있지 않아요.
+Stage 6–10은 `projects/study-cli/`에서 같은 코드베이스를 확장합니다.
+Stage 6–10 brief는 이번 기능, 터미널 사용 예시, 동작 조건, 완료 확인으로 구성합니다.
 
 Stage 1–6의 단일 파일은 개인 compile wrapper를 사용해요.
 
@@ -38,8 +40,8 @@ Valgrind 검증을 별도로 실행해요.
 
 ## Repository map
 
-- `practice/`: Stage 1–8의 독립적인 문제
-- `projects/study-cli/`: 같은 코드베이스로 이어지는 Stage 9–10
+- `practice/`: Stage 1–5 연습과 Stage 6–8의 버전별 명세
+- `projects/study-cli/`: Stage 6–10의 구현 위치와 공통 계약, Stage 9–10 명세
 - `bridges/`: malloc-lab과 PintOS를 위한 Stage 11–12 모형
 - `CURRICULUM.md`: 앞으로 갈 지도와 단계 상태
 - `LEARNING_LOG.md`: 실제로 확인한 이해와 코드 근거

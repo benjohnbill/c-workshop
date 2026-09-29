@@ -11,9 +11,11 @@ born: 2026-09-22
 
 This repository builds C fluency from function pointers through a usable CLI,
 then adds two bounded bridges into malloc-lab and PintOS. The learner writes the
-programs from empty files. A running program is evidence, not the end of the
-exercise: pointer state, ownership, cleanup, and the ability to explain the
-result also matter.
+code. Stages 6–10 evolve one program in projects/study-cli; each brief states
+observable features, usage, behavior, and completion checks. Explain concepts
+when needed and keep required practice constraints short. A running program is
+evidence, not the end of the exercise: pointer state, ownership, cleanup, and
+the ability to explain the result also matter.
 
 Read `../docs/tutor-spine.md` through the parent workspace instructions. This
 file defines only the rules specific to this workshop.

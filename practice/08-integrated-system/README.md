@@ -1,39 +1,48 @@
 ---
 scope: Stage 8 behavior specification
-truth: This file defines required behavior, not implementation structure
-updated: 2026-09-22
+truth: This file defines a scratch-file persistence version, not the Stage 9 storage contract
+updated: 2026-09-23
 ---
 
-# Stage 8 — Delivery Center
+# Stage 8 — Save and Load
 
-## Scenario
+## 사용 흐름
 
-배송 센터는 여러 package를 보관하고 각 package에 선택된 배송 policy로 요금을
-계산해요. Package가 발송되거나 취소되면 센터에서 사라지고, 나머지 package와
-policy는 계속 정상적으로 사용할 수 있어야 해요.
+1. `save`에 파일 경로와 기록을 전달해 파일에 저장합니다.
+2. 이후 `list`나 `total`에 같은 경로를 전달해 저장된 기록을 확인합니다.
+3. 쓰기 실패 때 파일이 불완전하게 남을 수 있으므로 실험용 파일만 사용합니다.
 
-## Required behavior
+## Try it
 
-- 다음 package 세 개를 등록해요.
-  - `#101`, label `books`, 2 kg, economy
-  - `#102`, label `laptop`, 1 kg, express
-  - `#103`, label `clothes`, 5 kg, economy
-- Economy 요금은 기본 1000원과 kg당 500원이에요.
-- Express 요금은 기본 3000원과 kg당 1000원이에요.
-- 모든 package의 ID, label, policy와 계산된 요금을 출력해요.
-- `#102`를 발송하여 센터에서 제거하고 남은 package를 다시 출력해요.
-- 존재하지 않는 ID의 발송·취소는 다른 package를 바꾸지 않고 실패를 알려요.
-- 센터가 종료될 때 남아 있는 package와 각 package가 소유한 자원을 정리해요.
-- 등록, 제거, 전체 정리 중 어느 단계에서도 해제된 package를 다시 사용하면 안 돼요.
-
-## Expected output
-
-```text
-#101 books economy 2000
-#102 laptop express 4000
-#103 clothes economy 3500
-Dispatched #102
-Remaining:
-#101 books economy 2000
-#103 clothes economy 3500
+```sh
+./study save /tmp/study-stage8.tsv C 30 OS 45
+./study list /tmp/study-stage8.tsv
+./study total /tmp/study-stage8.tsv
 ```
+
+`list`에서 두 기록을 확인하고 `total`에서 `Total: 75 minutes`를 확인합니다.
+
+## Behavior
+
+- 문법은 `study save PATH [SUBJECT MINUTES ...]`, `study list PATH`, `study total PATH`입니다.
+- `save`는 전체 목록을 기록합니다. 파일이 있으면 교체하며, 빈 목록도 저장할 수 있습니다.
+- 과목·시간과 종료 상태는 [공통 규칙](../../projects/study-cli/README.md#shared-contract)을 따릅니다. 잘못된 명령 입력은 기존 파일을 바꾸지 않습니다.
+- 파일 첫 줄은 `subject`, `minutes` 두 field의 TSV header입니다. 이후 한 줄마다 한 기록이며 field는 tab, 행은 newline으로 구분합니다.
+- header만 있는 파일은 빈 목록입니다. header 누락, field 수 오류, 잘못된 값은 손상된 파일입니다.
+- `list`·`total`은 파일 전체가 유효할 때 결과를 출력합니다. 손상된 파일은 행 번호를 포함한 오류를 알리고 원본을 유지합니다.
+- 없는 파일이나 읽기·쓰기 실패는 실행 오류입니다. 쓰기 실패를 성공으로 보고하지 않습니다.
+- 기존 파일을 안전하게 보존하는 저장은 Stage 9에서 추가합니다.
+
+필수 연습: `FILE *`를 통한 입출력을 별도 module로 만들고 기록 배열과 연결합니다.
+읽기 버퍼가 재사용돼도 앞서 읽은 기록은 유지되어야 합니다. 정상·실패 경로에서
+열었던 파일과 확보한 메모리를 정리합니다.
+
+## Done when
+
+- 저장 후 다른 process에서 같은 내용·순서·합계를 확인합니다. 빈 목록도 왕복합니다.
+- 과목에 공백·한국어가 있는 기록, 배열 확장이 필요한 많은 기록을 왕복합니다.
+- 파일 중간에 잘못된 시간을 넣어 전체 결과가 거부되고 원본은 유지되는지 확인합니다.
+- 없는 입력 경로와 쓸 수 없는 출력 경로에서 오류를 확인하고 [공통 완료 조건](../../CURRICULUM.md#shared-completion-gates)을 통과합니다.
+
+다음 버전: [정식 명령과 안전한 저장](../../projects/study-cli/README.md#stage-9--daily-cli).
+Stage 9에서는 ID·날짜·메모가 있는 v1 형식을 사용하며 이 실험 파일의 변환은 요구하지 않습니다.

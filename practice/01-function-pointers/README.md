@@ -11,22 +11,22 @@ updated: 2026-09-22
 
 ## Preserved exercises
 
-- `fp_practice1.c`: 최초 시도예요. 일반 함수 포인터 부분은 진행됐지만 구조체
+- `practice1-1.c`: 최초 시도예요. 일반 함수 포인터 부분은 진행됐지만 구조체
   case에는 유효한 저장 공간을 가리키지 않는 포인터가 남아 있어 실행 대상으로
   사용하지 않아요.
-- `fp_practice2.c`: 일반 회원과 VIP 적립 함수를 하나의 함수 포인터로 교체해요.
-- `fp_practice3.c`: 큰 값과 작은 값을 고르는 함수를 하나의 함수 포인터로 교체해요.
+- `practice1-2.c`: 일반 회원과 VIP 적립 함수를 하나의 함수 포인터로 교체해요.
+- `practice1-3.c`: 큰 값과 작은 값을 고르는 함수를 하나의 함수 포인터로 교체해요.
 
 ## Observed output
 
-`fp_practice2.c`:
+`practice1-2.c`:
 
 ```text
 일반 회원 적립금: 100원
 VIP 회원 적립금: 500원
 ```
 
-`fp_practice3.c`:
+`practice1-3.c`:
 
 ```text
 큰 값: 12
