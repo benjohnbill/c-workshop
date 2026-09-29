@@ -1,0 +1,16 @@
+# Build outputs
+*.o
+*.a
+*.so
+*.out
+
+# Runtime and diagnostic artifacts
+*.tmp
+*.log
+vgcore.*
+core
+core.*
+
+# Local environment
+.env
+.cache/
