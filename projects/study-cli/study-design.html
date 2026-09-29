@@ -1,0 +1,755 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>study 설계 노트</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Gowun+Dodum&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme:light dark;
+  --bg:#EFF3F3; --surface:#FFFFFF; --surface-2:#E6ECEC; --sunken:#DBE3E3;
+  --ink:#12201F; --ink-2:#3D4E4D; --muted:#6D7D7C; --line:#CDD8D8;
+  --s1:#AF4227; --s1-soft:#F9E6E1; --s1-rail:#D9917E;
+  --s2:#0A7165; --s2-soft:#DDF0EC; --s2-rail:#6FBBB0;
+  --s3:#453AA6; --s3-soft:#E5E3F7; --s3-rail:#9A92DC;
+  --s4:#7E6416; --s4-soft:#F5EEDA; --s4-rail:#C3A85C;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#0B1413; --surface:#121C1B; --surface-2:#182322; --sunken:#0E1817;
+  --ink:#E0EAE9; --ink-2:#A8B7B6; --muted:#7E8D8C; --line:#243130;
+  --s1:#F09479; --s1-soft:#2B1712; --s1-rail:#7E4030;
+  --s2:#4FC5B3; --s2-soft:#0D2A26; --s2-rail:#2C6B61;
+  --s3:#A398F3; --s3-soft:#1B1836; --s3-rail:#4E4696;
+  --s4:#D8B65E; --s4-soft:#2A2312; --s4-rail:#7A6631;
+}}
+:root[data-theme="dark"]{
+  --bg:#0B1413; --surface:#121C1B; --surface-2:#182322; --sunken:#0E1817;
+  --ink:#E0EAE9; --ink-2:#A8B7B6; --muted:#7E8D8C; --line:#243130;
+  --s1:#F09479; --s1-soft:#2B1712; --s1-rail:#7E4030;
+  --s2:#4FC5B3; --s2-soft:#0D2A26; --s2-rail:#2C6B61;
+  --s3:#A398F3; --s3-soft:#1B1836; --s3-rail:#4E4696;
+  --s4:#D8B65E; --s4-soft:#2A2312; --s4-rail:#7A6631;
+}
+
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Gowun Dodum",system-ui,-apple-system,sans-serif;
+  font-size:17px; line-height:1.85}
+.wrap{max-width:920px; margin:0 auto; padding:44px 22px 90px; display:flex; flex-direction:column; gap:12px}
+.mono,code,pre{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+code{font-size:0.85em; background:var(--surface-2); padding:0.1em 0.38em; border-radius:3px}
+.dh{font-family:"Do Hyeon","Gowun Dodum",sans-serif; font-weight:400}
+a{color:var(--s2)}
+
+/* header */
+header{display:flex; flex-direction:column; gap:16px; padding-bottom:34px; margin-bottom:22px; border-bottom:3px solid var(--ink)}
+h1{margin:0; font-size:clamp(38px,7vw,62px); line-height:1.1; letter-spacing:-0.02em}
+.sub{margin:0; font-size:18px; color:var(--ink-2); max-width:62ch}
+.meta{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--muted)}
+.roadmap{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; margin-top:6px}
+.rm{padding:16px 16px 18px; border-top:4px solid; background:var(--surface); display:flex; flex-direction:column; gap:5px; text-decoration:none; color:inherit}
+.rm.a{border-color:var(--s2)} .rm.b{border-color:var(--s3)} .rm.c{border-color:var(--s4)}
+.rm .n{font-size:26px; line-height:1}
+.rm.a .n{color:var(--s2)} .rm.b .n{color:var(--s3)} .rm.c .n{color:var(--s4)}
+.rm .t{font-size:17px}
+.rm .d{font-size:14px; color:var(--muted); line-height:1.6}
+
+/* part */
+.part{display:flex; flex-direction:column; gap:22px; padding:38px 0 12px}
+.part-head{display:flex; align-items:flex-start; gap:20px; flex-wrap:wrap}
+.bignum{font-size:76px; line-height:0.85; letter-spacing:-0.04em}
+.p1 .bignum{color:var(--s2)} .p2 .bignum{color:var(--s3)} .p3 .bignum{color:var(--s4)}
+.part-title{display:flex; flex-direction:column; gap:5px; flex:1; min-width:260px}
+.part-title h2{margin:0; font-size:clamp(26px,4vw,36px); line-height:1.2; letter-spacing:-0.02em}
+.oneline{font-size:18px; color:var(--ink-2)}
+
+.block{display:flex; flex-direction:column; gap:12px}
+h3{margin:0; font-size:23px; letter-spacing:-0.01em}
+h4{margin:6px 0 0; font-size:18px; letter-spacing:-0.01em; color:var(--ink)}
+.p1 h3{color:var(--s2)} .p2 h3{color:var(--s3)} .p3 h3{color:var(--s4)}
+p{margin:0; max-width:66ch; color:var(--ink-2)}
+p strong, li strong{color:var(--ink)}
+.lead{font-size:19px; color:var(--ink)}
+ul,ol{margin:0; padding-left:1.3em; color:var(--ink-2); max-width:66ch}
+li+li{margin-top:4px}
+
+/* chapter (part 2) */
+.chapter{display:flex; flex-direction:column; gap:14px; padding:26px 0 8px; border-top:1px solid var(--line)}
+.chapter .kicker{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:0.12em; color:var(--muted)}
+.step{display:grid; grid-template-columns:92px 1fr; gap:14px; align-items:start}
+.step .tag{font-family:"IBM Plex Mono",monospace; font-size:12px; padding:3px 8px; text-align:center; border:1.5px solid; align-self:start; margin-top:4px}
+.step .tag.think{color:var(--s3); border-color:var(--s3-rail); background:var(--s3-soft)}
+.step .tag.shake{color:var(--s1); border-color:var(--s1-rail); background:var(--s1-soft)}
+.step .tag.fix{color:var(--s2); border-color:var(--s2-rail); background:var(--s2-soft)}
+.step .body{display:flex; flex-direction:column; gap:10px; min-width:0}
+@media (max-width:640px){ .step{grid-template-columns:1fr; gap:6px} .step .tag{justify-self:start} }
+
+/* quote of his own words */
+blockquote.said{margin:0; padding:12px 16px; background:var(--surface); border-left:4px solid var(--s3-rail);
+  color:var(--ink); font-size:16px; line-height:1.8; max-width:70ch}
+blockquote.said .who{display:block; font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--muted); margin-bottom:4px}
+
+/* verdict chips */
+.v{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:12px; padding:0 7px; margin-right:6px; border:1px solid}
+.v.ok{color:var(--s2); border-color:var(--s2-rail); background:var(--s2-soft)}
+.v.no{color:var(--s1); border-color:var(--s1-rail); background:var(--s1-soft)}
+.v.half{color:var(--s4); border-color:var(--s4-rail); background:var(--s4-soft)}
+
+/* predict */
+details.predict{background:var(--surface); border:1px dashed var(--s3-rail); padding:12px 16px; max-width:70ch}
+details.predict summary{cursor:pointer; color:var(--s3); font-size:16px}
+details.predict summary::marker{color:var(--s3)}
+details.predict[open] summary{margin-bottom:10px}
+details.predict div{display:flex; flex-direction:column; gap:8px}
+
+/* figure */
+figure{margin:0; background:var(--surface); border:1px solid var(--line); padding:24px 22px 18px; display:flex; flex-direction:column; gap:16px; overflow-x:auto}
+figcaption{font-size:15px; color:var(--ink-2); border-top:1px solid var(--line); padding-top:14px; max-width:72ch}
+.fig-title{font-size:19px}
+.p1 .fig-title{color:var(--s2)} .p2 .fig-title{color:var(--s3)} .p3 .fig-title{color:var(--s4)}
+figure svg{width:100%; height:auto; color:var(--ink); min-width:560px}
+figure svg text{font-family:"IBM Plex Mono","Gowun Dodum",monospace; fill:currentColor}
+figure svg .k{font-family:"Gowun Dodum",sans-serif}
+figure svg .mut{fill:var(--muted)}
+figure svg .box{fill:var(--surface-2); stroke:currentColor; stroke-width:1.3}
+figure svg .box.dash{stroke-dasharray:5 4; fill:none}
+figure svg .acc{fill:var(--s2-soft); stroke:var(--s2); stroke-width:2}
+figure svg .acc-t{fill:var(--s2)}
+figure svg .ln{stroke:currentColor; stroke-width:1.3; fill:none}
+figure svg .ln.dash{stroke-dasharray:4 4}
+figure svg .arrowhead{fill:currentColor}
+
+/* tables */
+.tbl{overflow-x:auto}
+table{border-collapse:collapse; width:100%; background:var(--surface); font-size:15.5px}
+th,td{border:1px solid var(--line); padding:8px 11px; text-align:left; vertical-align:top; color:var(--ink-2); line-height:1.65}
+th{background:var(--surface-2); color:var(--ink); font-weight:400; font-family:"Do Hyeon","Gowun Dodum",sans-serif; font-size:16px}
+td b{color:var(--ink); font-weight:400}
+td.c{white-space:nowrap}
+tr.cont td:first-child{border-top-color:transparent}
+
+/* code */
+.codebox{border:1px solid var(--line); background:var(--surface); overflow:hidden}
+.codebox .cap{padding:9px 15px; background:var(--surface-2); border-bottom:1px solid var(--line);
+  font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-2); display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap}
+.codebox pre{margin:0; padding:14px 0; overflow-x:auto; font-size:13.5px; line-height:1.65; white-space:normal}
+.codebox pre .ln{display:block; padding:0 18px; white-space:pre; min-height:1.65em}
+.codebox pre .ln.mark{background:var(--s2-soft); box-shadow:inset 3px 0 0 var(--s2-rail)}
+.codebox pre .ln.markbad{background:var(--s1-soft); box-shadow:inset 3px 0 0 var(--s1-rail)}
+
+/* note band */
+.band{background:var(--sunken); border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+  padding:26px 24px; display:flex; flex-direction:column; gap:12px; margin:10px -22px}
+.band .kicker{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:0.12em; color:var(--muted)}
+
+footer{border-top:1px solid var(--line); margin-top:30px; padding-top:18px; font-size:14px; color:var(--muted); line-height:1.7}
+footer p{color:var(--muted); font-size:14px}
+@media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1 class="dh">study 설계 노트</h1>
+  <p class="sub">공부 기록을 남기는 작은 CLI를 C로 키우고 있습니다. 이 문서는 그 프로그램을 무엇을, 어떻게, 왜 만드는지 적고, 그 답에 닿기까지 무엇을 잘못 생각했고 무엇을 보고 고쳤는지를 함께 남깁니다.</p>
+  <div class="meta">c-workshop / projects/study-cli · 2026-09-29 · Stage 7 진입 시점</div>
+  <div class="roadmap">
+    <a class="rm a" href="#part1"><div class="n dh">1</div><div class="t dh">무엇을 만드나</div><div class="d">study가 하는 일, 명령 네 개, 세 층으로 나눈 경계선과 stage별 요구 지도입니다.</div></a>
+    <a class="rm b" href="#part2"><div class="n dh">2</div><div class="t dh">어떻게 여기까지 왔나</div><div class="d">그때 세운 가설을 그대로 인용하고, 그 가설을 흔든 반례와 고친 그림을 순서대로 따라갑니다.</div></a>
+    <a class="rm c" href="#part3"><div class="n dh">3</div><div class="t dh">Stage 7 진입 결정</div><div class="d">grilling으로 정한 여섯 가지 결정과, 그 결정을 적용한 지금의 코드입니다.</div></a>
+  </div>
+</header>
+
+<!-- ═══════════ PART 1 ═══════════ -->
+<section class="part p1" id="part1">
+  <div class="part-head">
+    <div class="bignum dh">1</div>
+    <div class="part-title">
+      <h2 class="dh">무엇을 만드나</h2>
+      <div class="oneline">결론만 모은 참조 부분입니다. 왜 이렇게 됐는지는 2부에 있습니다.</div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h3 class="dh">study가 하는 일</h3>
+    <p>이 프로그램에는 목적이 두 층 있습니다. 하나는 <strong>내가 이 프로그램을 만드는 이유</strong>이고, 다른 하나는 <strong>사용자가 이 프로그램을 쓰는 이유</strong>입니다. 설계를 판단할 때는 주로 뒤쪽을 기준으로 삼습니다.</p>
+    <blockquote class="said"><span class="who">만드는 이유</span>실제 프로젝트를 통한 직접 경험. 내 C언어 문법(구조체, 함수형 포인터, 표준 라이브러리, ...)에 대한 이해도 향상</blockquote>
+    <div class="tbl"><table>
+      <tr><th>질문</th><th>처음 적은 답</th></tr>
+      <tr><td class="c"><b>누가 쓰나</b></td><td>하루하루 자신이 공부한 바를 간단하게 기록하고, 나중에 그것을 가공하거나 기록 그 자체를 시각적인 형태(표, 그래프 등)로 감상하고자 하는 사람</td></tr>
+      <tr><td class="c"><b>언제 쓰나</b></td><td>하루를 마무리할 때 꾸준히 기록하는 형태. journal이나 캘린더와 역할이 비슷하다.</td></tr>
+      <tr><td class="c"><b>무엇을 위해 쓰나</b></td><td>기록하는 재미를 느끼고, 성취감을 가시화하고 싶은 사람</td></tr>
+    </table></div>
+    <p>답을 적으면서 이런 말도 덧붙였습니다.</p>
+    <blockquote class="said"><span class="who">덧붙인 말</span>내가 구현할 수 있는 범위를 지키느라 최대한 확장은 덜 하려고 했지만, 솔직한 감상으로는, 위와 같이 시각화나 조회와 같은 사용자 경험을 주어야 조금 더 의미가 있지 않을까 싶긴 해. 나도 사용하면서 재미를 느끼고.</blockquote>
+    <p>그래서 계약 밖의 아이디어는 버리지 않고 <strong>확장 후보</strong>로 따로 적어 둡니다. 지금 만들지는 않지만, 경계선을 그을 때 "나중에 이 기능이 붙어도 이 경계가 버티는가?"를 시험하는 사례로 씁니다.</p>
+    <ul>
+      <li><strong>잔디밭 조회</strong>: GitHub 잔디밭처럼 날짜별 기록을 시각화합니다. 한 칸의 값은 그날의 <code>total --date</code>입니다.</li>
+      <li><strong>과목별 합계</strong>: 과목별 합계와 총합을 함께 보여 주는 집계(group by)입니다. <code>total</code>의 기본 출력은 바꾸지 않고 별도 옵션으로 추가합니다.</li>
+      <li><strong>TUI</strong>: yazi처럼 한 화면에 list와 total을 보여 주고, 과목 분류와 검색을 UI 안에서 합니다. 기록 로직은 그대로 두고 입력과 출력 쪽만 바꾸는 확장입니다.</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <h3 class="dh">명령은 기록에 대한 네 가지 조작</h3>
+    <p class="lead">study는 "기록" 하나를 다루는 프로그램이고, 명령은 그 기록을 만들고, 읽고, 고치고, 지우는 조작입니다.</p>
+    <p>기록 하나는 <code>id</code>, <code>date</code>, <code>subject</code>, <code>minutes</code>, <code>note</code>로 이루어집니다. 명령을 하나씩 따로 외우지 않고, 이 기록에 대한 조작으로 보면 네 명령이 한 틀에 들어옵니다. 이 틀을 CRUD라고 부릅니다.</p>
+    <div class="tbl"><table>
+      <tr><th>조작</th><th>명령</th><th>처음 들어오는 stage</th></tr>
+      <tr><td><b>Create</b> 만들기</td><td><code>add</code></td><td>6 (argv 쌍), 9 (옵션과 ID)</td></tr>
+      <tr><td><b>Read</b> 읽기</td><td><code>list</code>, <code>total</code></td><td>7 (filter는 10)</td></tr>
+      <tr><td><b>Update</b> 고치기</td><td><code>edit</code></td><td>10</td></tr>
+      <tr><td><b>Delete</b> 지우기</td><td><code>remove</code></td><td>10</td></tr>
+    </table></div>
+
+    <h4 class="dh">명령 표</h4>
+    <p>계약을 내 말로 다시 적은 표입니다. 정확한 출력 문구와 실패 조건은 stage를 마칠 때 README와 대조하는 checklist로 확인합니다.</p>
+    <div class="tbl"><table>
+      <tr><th>명령</th><th>입력</th><th>출력</th></tr>
+      <tr><td><b>help</b></td><td>없음</td><td>flag와 각 명령어의 작동 방식</td></tr>
+      <tr><td><b>add</b></td><td>subject, minutes</td><td>기록 하나를 만든다</td></tr>
+      <tr class="cont"><td></td><td>date: 기본값은 실행한 날, 명시하면 덮어쓰기</td><td></td></tr>
+      <tr class="cont"><td></td><td>note: 커밋 메시지처럼 내용을 남긴다</td><td></td></tr>
+      <tr><td><b>list</b></td><td>flag가 없으면 전부</td><td>고른 기록의 components: ID, date, subject, minutes, note</td></tr>
+      <tr class="cont"><td></td><td>flag로 특정 과목이나 날짜(하루)를 고를 수 있다</td><td>ID는 edit·remove가 가리키는 번호</td></tr>
+      <tr class="cont"><td></td><td>둘을 함께 주면 둘 다 만족하는 기록만</td><td></td></tr>
+      <tr><td><b>total</b></td><td>list와 같은 filter</td><td>고른 기록의 minutes 합, 숫자 하나</td></tr>
+    </table></div>
+
+    <h4 class="dh">list와 total은 같은 기록을 두 방식으로 보여 준다</h4>
+    <p>두 명령은 <strong>고르기</strong> 단계가 완전히 같고, <strong>보여 주기</strong> 단계만 다릅니다. <code>list</code>는 고른 기록을 한 줄씩 그대로 보여 주고, <code>total</code>은 고른 기록의 minutes를 하나로 합칩니다. 은행 앱에 비유하면 거래 내역과 합계 금액입니다. 저장된 기록이 아래 세 개일 때를 예로 듭니다.</p>
+    <div class="codebox"><div class="cap"><span>저장된 기록 (예시)</span><span>구분자는 계약이 정하지 않음</span></div><pre><span class="ln">ID  DATE        SUBJECT  MINUTES  NOTE</span>
+<span class="ln">1   2026-09-23  C        30       pointer review</span>
+<span class="ln">2   2026-09-23  OS       45</span>
+<span class="ln">3   2026-09-24  C        20</span></pre></div>
+    <div class="tbl"><table>
+      <tr><th>명령</th><th>고르는 기록</th><th>출력</th></tr>
+      <tr><td><code>list</code></td><td>1, 2, 3</td><td>세 기록을 한 줄씩</td></tr>
+      <tr><td><code>total</code></td><td>1, 2, 3</td><td><code>Total: 95 minutes</code></td></tr>
+      <tr><td><code>list --subject C</code></td><td>1, 3</td><td>두 기록을 한 줄씩</td></tr>
+      <tr><td><code>total --subject C</code></td><td>1, 3</td><td><code>Total: 50 minutes</code></td></tr>
+      <tr><td><code>total --date 2026-09-23</code></td><td>1, 2</td><td><code>Total: 75 minutes</code></td></tr>
+    </table></div>
+  </div>
+
+  <div class="block">
+    <h3 class="dh">경계선: 세 층</h3>
+    <p class="lead">함수는 동작 하나이고, module은 비밀 하나를 공유하는 함수들의 묶음입니다.</p>
+    <p>여기서 비밀은 바깥에서 몰라도 되는 결정을 말합니다. 예를 들면 "기록을 dynamic array에 담는다"는 결정입니다. 이 결정을 바꿀 때 같이 고쳐야 하는 함수들이 한 module에 모입니다. 이 판단법을 <strong>변경 시험</strong>이라고 부르고, Parnas가 1972년에 제시한 information hiding 원칙에서 왔습니다.</p>
+    <figure>
+      <div class="fig-title dh">호출은 바깥에서 core로만 향한다</div>
+      <svg viewBox="0 0 720 320" role="img" aria-label="interface와 storage가 core를 호출하고, core는 argv와 파일을 모르는 세 층 구조">
+        <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker></defs>
+        <rect class="box dash" x="20" y="30" width="170" height="50"/>
+        <text x="105" y="52" text-anchor="middle" class="k" font-size="13">사용자</text>
+        <text x="105" y="70" text-anchor="middle" font-size="11" class="mut">argv · stdout · stderr</text>
+        <rect class="box dash" x="20" y="240" width="170" height="50"/>
+        <text x="105" y="262" text-anchor="middle" class="k" font-size="13">파일</text>
+        <text x="105" y="280" text-anchor="middle" font-size="11" class="mut">TSV</text>
+
+        <rect class="box" x="270" y="30" width="220" height="50"/>
+        <text x="380" y="52" text-anchor="middle" font-size="14">interface</text>
+        <text x="380" y="70" text-anchor="middle" font-size="11" class="mut">main.c</text>
+        <rect class="acc" x="270" y="135" width="220" height="50"/>
+        <text x="380" y="157" text-anchor="middle" font-size="14" class="acc-t">core</text>
+        <text x="380" y="175" text-anchor="middle" font-size="11" class="acc-t">record.c</text>
+        <rect class="box dash" x="270" y="240" width="220" height="50"/>
+        <text x="380" y="262" text-anchor="middle" font-size="14">storage</text>
+        <text x="380" y="280" text-anchor="middle" font-size="11" class="mut">Stage 8부터</text>
+
+        <line class="ln" x1="192" y1="55" x2="266" y2="55" marker-start="url(#a2)" marker-end="url(#a2)"/>
+        <text x="229" y="47" text-anchor="middle" font-size="11" class="k">해석·출력</text>
+        <line class="ln" x1="192" y1="265" x2="266" y2="265" marker-start="url(#a2)" marker-end="url(#a2)"/>
+        <text x="229" y="257" text-anchor="middle" font-size="11" class="k">읽기·쓰기</text>
+        <line class="ln" x1="380" y1="82" x2="380" y2="131" marker-end="url(#a2)"/>
+        <text x="390" y="112" font-size="11" class="k">호출</text>
+        <line class="ln" x1="380" y1="238" x2="380" y2="189" marker-end="url(#a2)"/>
+        <text x="390" y="218" font-size="11" class="k">호출</text>
+
+        <text x="510" y="52" font-size="12" class="k">명령 형식 · 출력 문구 · exit code</text>
+        <text x="510" y="70" font-size="11" class="k mut">stage마다 바뀐다</text>
+        <text x="510" y="157" font-size="12" class="k">기록의 모양 · C·R·U·D · 검사 규칙</text>
+        <text x="510" y="175" font-size="11" class="k mut">argv도 파일도 모른다</text>
+        <text x="510" y="262" font-size="12" class="k">파일 형식 · 저장 방식</text>
+        <text x="510" y="280" font-size="11" class="k mut">Stage 8, 9에서 바뀐다</text>
+      </svg>
+      <figcaption>interface와 storage는 core를 호출하지만, core는 둘 중 어느 쪽도 알지 못합니다. 그래서 TUI를 붙이면 interface만 바뀌고, 파일 형식을 바꾸면 storage만 바뀝니다. 가장 자주 바뀌는 층이 interface라는 점이 core와 분리해야 하는 가장 큰 이유입니다.</figcaption>
+    </figure>
+    <p>module마다 세 질문에 답합니다. 이 세 질문이 명세서를 대신합니다. 명세서를 받아 쓰면 결과만 남지만, 이 질문을 던질 줄 알면 명세서를 스스로 만들 수 있습니다.</p>
+    <ol>
+      <li><strong>무엇 때문에 바뀌나?</strong> 바뀌는 이유가 다르면 다른 module에 둡니다.</li>
+      <li><strong>무엇을 소유하나?</strong> malloc한 메모리, 열어 둔 파일처럼 해제할 책임이 있는 자원을 가진 쪽이 생성과 해제를 모두 맡습니다.</li>
+      <li><strong>누가 누구를 아나?</strong> interface는 core를 호출합니다. 반대로 core가 argv를 알면, argv 없이 core를 검증할 수 없습니다.</li>
+    </ol>
+    <p><strong>CRUD는 module을 나누는 기준이 아닙니다.</strong> C·R·U·D는 모두 "기록이 메모리에 어떤 모양으로 들어 있는가"를 알아야 하므로 core에 함께 들어갑니다. module은 동사가 아니라 아는 것으로 나눕니다.</p>
+
+    <h4 class="dh">stage별 요구 지도</h4>
+    <p>brief가 각 층에 요구하는 것만 적었습니다. core는 Stage 7까지 C·R만 쓰다가 Stage 10에서 U·D가 붙고, storage는 Stage 8에 처음 생기고, interface는 stage마다 명령 형식이 바뀝니다.</p>
+    <div class="tbl"><table>
+      <tr><th>Stage</th><th>interface</th><th>core</th><th>storage</th></tr>
+      <tr><td><b>6</b></td><td>argv를 과목·시간 쌍으로 해석, 전체 출력</td><td>C (add), R (전체)</td><td>없음</td></tr>
+      <tr><td><b>7</b></td><td>command 자리 해석 (<code>list</code>, <code>total</code>)</td><td>C, R (순회 한 곳 + 함수 포인터로 기록별 동작: 목록, 합계)</td><td>없음</td></tr>
+      <tr class="cont"><td></td><td colspan="3">필수: interface와 core를 별도 module로 분리</td></tr>
+      <tr><td><b>8</b></td><td><code>save</code>, <code>list PATH</code>, <code>total PATH</code></td><td>C, R</td><td>TSV(subject, minutes) 쓰기·읽기, 손상된 행 거부</td></tr>
+      <tr class="cont"><td></td><td colspan="3">필수: <code>FILE *</code> 입출력을 별도 module로</td></tr>
+      <tr><td><b>9</b></td><td>option(<code>--subject</code> 등) 해석, <code>help</code></td><td>C (ID·date·note 부여), R</td><td>v1 형식(<code>next_id</code>, header), 임시 파일 + <code>rename()</code> 저장</td></tr>
+      <tr><td><b>10</b></td><td><code>edit</code>, <code>remove</code>, filter option</td><td>U, D, R + filter, ID로 찾기</td><td>9와 같음</td></tr>
+      <tr class="cont"><td></td><td colspan="3">단위 테스트: core와 storage를 argv 없이 검증</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<!-- ═══════════ PART 2 ═══════════ -->
+<section class="part p2" id="part2">
+  <div class="part-head">
+    <div class="bignum dh">2</div>
+    <div class="part-title">
+      <h2 class="dh">어떻게 여기까지 왔나</h2>
+      <div class="oneline">인용은 그때 실제로 쓴 문장 그대로입니다. 오타도 고치지 않았습니다.</div>
+    </div>
+  </div>
+  <p>각 장은 세 칸으로 나뉩니다. <span class="v half">생각</span>은 그때 세운 가설, <span class="v no">흔든 것</span>은 그 가설을 흔든 반례나 증거, <span class="v ok">고친 그림</span>은 그 뒤에 남은 이해입니다. 가설 중 일부는 맞았고, 그것도 그대로 적었습니다.</p>
+
+  <!-- ① -->
+  <div class="chapter">
+    <div class="kicker">① 빌드부터</div>
+    <h3 class="dh">Makefile은 파일이 다 모인 뒤에 만드는 줄 알았다</h3>
+    <div class="step"><span class="tag think">생각</span><div class="body">
+      <blockquote class="said">'일반적인 쉘 프로그램을 만드는 과정'을 따라가고 싶어. 실행파일 만들고 bin 폴더로 집어넣기 위한 과정 자체를 물어보는 것 같기는 한데, 보통 거기서 makefile을 사용하는게 일반이라고 한다면, 그대로 할게.</blockquote>
+      <blockquote class="said">c라는 명령어는 기본적으로 dbg를 고려해서 -O0로 돌리긴 하거든? 근데, shell 프로그램을 -O0로 실행파일을 만드는게 맞을까? 일반적으로 O3가 O2로 돌린다고 알고 있어서.</blockquote>
+      <blockquote class="said">뭔가 파일 형태들이 다 갖춰지고서 make로 묶는다고 보긴 했는데, 오히려 일반적으로 개발 workflow에서는 make를 만들어두고 파일이나 모듈이 생기면 추가하는 형태인가?</blockquote>
+    </div></div>
+    <div class="step"><span class="tag shake">흔든 것</span><div class="body">
+      <p>파일이 두 개가 되는 순간부터 컴파일할 명령이 필요합니다. module을 하나 떼어 낼 때마다 컴파일해 봐야 "떼어 낸 결과가 제대로 동작하는가"를 확인할 수 있습니다. 파일을 다 모은 뒤에 처음 컴파일하면, 오류가 나도 어느 분리 단계에서 생겼는지 구분할 수 없습니다.</p>
+    </div></div>
+    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+      <ul>
+        <li><strong>Makefile은 먼저 최소한으로 만들고, 파일이 생길 때마다 늘립니다.</strong> 처음에는 target 하나와 source 하나로 시작합니다.</li>
+        <li><strong>build는 두 종류입니다.</strong> 개발과 검증에는 <code>-O0 -g</code>를 씁니다. gdb에서 변수가 <code>&lt;optimized out&gt;</code>으로 사라지지 않고, valgrind의 줄 번호도 정확합니다. 배포와 설치에는 <code>-O2</code>를 씁니다. Debian, Fedora, Linux kernel의 기본값입니다. <code>-O3</code>는 코드가 커지고 항상 빠르지도 않아서, 측정으로 이득이 확인될 때 고릅니다.</li>
+        <li><strong>그래도 <code>-O2</code>로 가끔 빌드해 봅니다.</strong> <code>-Wmaybe-uninitialized</code> 같은 경고는 최적화 과정의 data flow 분석에서만 나오고, UB가 있는 코드는 <code>-O0</code>에서 우연히 동작하다가 <code>-O2</code>에서 결과가 달라지기도 합니다.</li>
+      </ul>
+    </div></div>
+  </div>
+
+  <!-- ② -->
+  <div class="chapter">
+    <div class="kicker">② 설계도가 없다는 불안</div>
+    <h3 class="dh">명세서를 받아 쓰면 만드는 능력이 사라질 것 같았다</h3>
+    <div class="step"><span class="tag think">생각</span><div class="body">
+      <blockquote class="said">사실 솔직히 말하면, 파일 설계 명세부터 나한테는 명확하지가 않긴 하거든? 왜냐하면, 이것도 이전 세션의 claude code한테 stage 거듭함에 따라 파일이 는다고 듣기만 해서.</blockquote>
+      <blockquote class="said">뭔가 api 명세/아키택처 등이 명확하게 나한테 개념잡힌 채로 작업하는게 아니라서 물어보는 거야. .. 그렇다고, 이게 단순히 너한테 명세서 뽑아달라고 하는 것도 내가 나중에 그것을 만들거나 지시할 수 있는 능력이 박탈당하는 것 같기도 하고.</blockquote>
+    </div></div>
+    <div class="step"><span class="tag shake">흔든 것</span><div class="body">
+      <p>막힌 이유는 "앞으로 파일이 늘어난다"는 말만 듣고, 그 최종 모습을 지금 설계해야 한다고 느꼈기 때문이었습니다. 실제로 Stage 7 brief가 요구하는 파일 설계는 "기록 관리와 명령 실행을 별도 source module로 분리"라는 한 줄뿐이었습니다. 파일은 미리 정한 설계도대로 늘어나지 않고, <strong>새 변경 이유가 생길 때</strong> 늘어납니다.</p>
+      <p>그다음에는 방향을 스스로 잡았습니다.</p>
+      <blockquote class="said">일단, 당장에 든 느낌으로는, '어떠한 명령어 / 어떠한 기능을 만들고 싶은 지'가 명확해야 하는 것 같아. 단순히 stage 단위로 나눈거 말고, 정말 내가 만들려고 하는게 뭔지를 스스로 알아야 할 것 같아서. 그리고 그러한 쉘 명령어나 기능 들을 내가 확인한 이후에야, 구체적으로 '프론트엔드/백엔드' 이런 느낌으로 역할을 나누듯이 여러 모듈을 구성할 수 있을 것 같아.</blockquote>
+    </div></div>
+    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+      <p><span class="v ok">맞음</span>목적지를 알아야 경계를 제자리에 그을 수 있습니다. 목적지는 이미 study-cli README에 Stage 10까지의 계약으로 있었습니다.</p>
+      <p><span class="v half">보완</span>목적지를 안다고 module을 지금 다 만들 필요는 없습니다. <strong>목적지는 한 번에 전체를 파악하고, 경계는 큰 선 하나만 먼저 긋고, 파일은 stage마다 필요할 때 만듭니다.</strong></p>
+      <p>능력을 잃지 않는 방법으로는 README를 요약받지 않고 <strong>내 말로 다시 쓰기</strong>로 했습니다. 그 결과가 DESIGN.md이고, README는 계약을 대조할 때만 봅니다.</p>
+      <blockquote class="said">이거 있으면 README는 거의 안 읽고(기대 출력이나 간단한 문제 시나리오 정도만 파악할 듯), 해당 DESIGN.md만 주로 ZED의 한 pane으로 상시 띄워둘 것 같아. 이래도 되나?</blockquote>
+      <p>그래도 됩니다. 다만 README를 내 말로 옮기다 조건을 빠뜨리면 그 오류가 코드로 들어가므로, 명령 표를 README와 한 번 대조하고, stage를 마칠 때 출력 문구와 exit code를 checklist로 대조합니다.</p>
+    </div></div>
+  </div>
+
+  <!-- ③ -->
+  <div class="chapter">
+    <div class="kicker">③ 명령이 무엇을 하는가</div>
+    <h3 class="dh">add는 스스로 설계했고, list와 total은 끝까지 헷갈렸다</h3>
+    <div class="step"><span class="tag think">생각</span><div class="body">
+      <blockquote class="said">터미널을 입력할 때의 시간이 기본으로 들어가고, 유저가 명시하는 게 있을 때만 공부 로그에 date를 덮어씌우는 식으로 하는 게 맞다고 봐. 공부 기록이라는 건 딱 그 순간에 내가 얼마나 했는지 적는 거잖아. 그런 용도라면 시간은 그때그때 계산해 주고, 나중에 GitHub 잔디처럼 날짜별 기록이나 공부 로그를 남길 때 그 시간이 정규화 소스가 되지 않을까 싶거든.</blockquote>
+      <blockquote class="said">• list 명령어: 특정 날짜 범위를 주는 건지, 아니면 subject를 명시했을 때 해당 subject의 모든 리스트가 나오는 건지 잘 모르겠음<br>• total 명령어: 마찬가지로 모호함<br>• edit [id], remove [id]: 정확히 어떻게 동작하도록 구현하려는 건지 불분명함<br><br>결국 이게 하나의 큰 틀을 잡고 가야 하는 제품 설계 같은데, 너 생각은 어때?</blockquote>
+    </div></div>
+    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+      <p><span class="v ok">맞음</span>add의 date 설계는 README를 보지 않고 "기록은 그 순간을 적는 것"이라는 용도에서 끌어냈는데, 계약과 같았습니다. 차이는 하나였습니다. 계약은 시각이 아니라 <strong>날짜(<code>YYYY-MM-DD</code>)</strong>만 저장합니다. 잔디밭도 하루가 한 칸이라 날짜로 충분합니다.</p>
+      <p>list, total, edit, remove가 흐릿했던 이유는 틀이 없어서가 아니라 <strong>관점 하나가 빠져 있어서</strong>였습니다. 명령을 따로따로 보지 않고 "기록 하나에 대한 조작"으로 보는 관점, 즉 CRUD입니다. 그리고 사용법의 대괄호 <code>[--date YYYY-MM-DD]</code>는 "생략할 수 있다"는 뜻이라서, 옵션 없이 쓰는 것도 한쪽만 쓰는 것도 모두 유효하다는 표기법도 몰랐습니다.</p>
+    </div></div>
+    <div class="step"><span class="tag think">생각</span><div class="body">
+      <blockquote class="said">list하고 total이라는 이름 자체가 뭔가 리스트업을 해서 개괄을 보는 느낌인 지라, 사실 나한테는 잘 와닿지가 않아서.</blockquote>
+      <blockquote class="said">total은 subject별 총 공부시간 단위 minutes를 합쳐주는 조회 역할인건가? 과목별 시간 &amp; 총 시간 식으로 보여주되, 거기서 추가 flag를 바탕으로 특정 과목만 볼 수 있는 느낌이고? 그리고 list는 그동안의 로그 raw data를 보여주는 단위인건가?</blockquote>
+      <blockquote class="said">일단 나는 total이 최소한 고른 과목의 총 minutes, 모든 과목의 총 minutes &amp; 모든 minutes(과목 불문)의 합. 이렇게 디ㅗ어야 한다고 보긴 하거든? 맞지 않아?</blockquote>
+    </div></div>
+    <div class="step"><span class="tag shake">흔든 것</span><div class="body">
+      <p>계약의 <code>total</code>은 과목별로 나눠 보여 주지 않고, 고른 기록의 합을 <strong>숫자 하나</strong>로 출력합니다. 원했던 세 가지를 계약과 맞춰 보면 두 가지는 이미 있었습니다.</p>
+      <div class="tbl"><table>
+        <tr><th>원한 것</th><th>계약에서 하는 방법</th></tr>
+        <tr><td>고른 과목의 총 minutes</td><td><code>total --subject C</code></td></tr>
+        <tr><td>과목과 상관없는 전체 합</td><td><code>total</code></td></tr>
+        <tr><td>과목별 총 minutes를 한꺼번에</td><td>없음 → 확장 후보 (group by)</td></tr>
+      </table></div>
+    </div></div>
+    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+      <p><span class="v ok">맞음</span>list는 쌓인 기록을 행 그대로 보여 주고, 고를 수 있습니다. filter는 날짜 하루와 과목 두 가지입니다.</p>
+      <p><span class="v half">절반</span>total이 과목별 합계를 보여 준다는 부분은 계약보다 한 걸음 나간 생각이었습니다. 그 기능은 <code>total</code>의 기본 출력을 바꾸지 않고 따로 추가합니다. 계약이 <code>Total: N minutes</code> 한 줄을 고정해 두었고, 출력 모양이 하나로 고정돼야 다른 script가 결과를 읽어 쓸 수 있기 때문입니다. 잔디밭을 그리는 코드가 날짜마다 <code>total --date</code>를 불러 숫자 하나를 받는 경우를 떠올리면 이유가 분명해집니다.</p>
+      <p>TUI 같은 아이디어가 자꾸 떠오르는 것도 문제가 아니었습니다.</p>
+      <blockquote class="said">... 자꾸. 사실, 이런 것들이 떠오르는게 문제네. 이게 shell에서의 불편한 명령어나 기능적인 측면을 보다보니까 말야. 근데, 너가 보기에 이 내용들은 너무 나간 이야기라는 거잖아. 아냐?</blockquote>
+      <p>너무 나간 이야기가 아니라 <strong>계약 밖의 이야기</strong>입니다. CLI로 쓰다가 불편을 느끼고 더 나은 interface를 떠올리는 것은 제품을 설계하는 사람의 생각입니다. 지금 만들지 않을 뿐이고, 경계선이 버티는지 시험하는 사례로 씁니다.</p>
+    </div></div>
+  </div>
+
+  <!-- ④ -->
+  <div class="chapter">
+    <div class="kicker">④ 기록 하나와 ID</div>
+    <h3 class="dh">Rec이 기록마다 하나씩 있다고 생각했다</h3>
+    <div class="step"><span class="tag think">생각</span><div class="body">
+      <blockquote class="said">같은 날 같은 과목을 여러 번 기록할 수 있기 때문인거지? 그 때문에 ID를 바탕으로 입력마다의 구분을 주려는 것이고. 이렇게 생각하면, 해시테이블 구조(map)를 쓸 수밖에 없겠구나? 자료구조 기준으로 본다면?</blockquote>
+    </div></div>
+    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+      <p><span class="v ok">맞음</span>기록 내용 안에는 기록 하나를 유일하게 가리킬 값이 없습니다. date, subject, minutes, note가 모두 같은 기록도 두 개 생길 수 있습니다. 그래서 내용과 무관한 번호를 붙입니다.</p>
+      <p><span class="v no">틀림</span>"쓸 수밖에 없다"까지는 가지 않습니다. <strong>ID가 유일해야 한다</strong>는 데이터 요구와 <strong>hash table을 쓴다</strong>는 성능 선택은 다른 문제입니다. 유일한 key가 있어도 배열을 처음부터 훑으면 찾을 수 있고, hash table은 <code>list</code>에 필요한 ID 오름차순을 보존하지 않습니다.</p>
+    </div></div>
+    <div class="step"><span class="tag think">생각</span><div class="body">
+      <p>배열 안에서 ID가 어떤 순서로 놓이는지 묻는 질문에 답하다가, 생각이 엉킨 지점을 스스로 발견했습니다.</p>
+      <blockquote class="said">일종의 stack 느낌으로 되는거 아닌가? 기록이 r-&gt;count되는 것처럼, r-&gt;list가 차곡차곡 쌓인다고 생각하긴 했는데. .. 잠깐만. 근데. 생각해보면, 뭔가 이상한거 같기도. 이러면 Rec 구조체인 r은 한 개만 있는 건가? 원래는, r이 각 '기록마다 존재'하는 구도였는데. 뭔가. r-&gt;list에서 그 list가 가리키는 주소가 실제 Sub *s를 값으로 들고있다고 생각하니까 ,뭔가 나도 생각이 꼬이는거 같은데.</blockquote>
+    </div></div>
+    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+      <p>r은 process 하나에 한 개뿐입니다. <code>main</code>에서 <code>new_record()</code>는 한 번만 호출됩니다. 기록마다 하나씩 생기는 것은 <code>Sub</code>입니다.</p>
+      <figure>
+        <div class="fig-title dh"><code>C 30 OS 45 C 10</code>을 넣었을 때의 heap</div>
+        <svg viewBox="0 0 700 300" role="img" aria-label="Rec 하나가 Sub pointer 배열 하나를 가리키고, 배열의 각 칸이 기록마다 하나인 Sub를, Sub가 기록마다 하나인 문자열을 가리키는 메모리 배치">
+          <defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker></defs>
+          <rect class="acc" x="20" y="100" width="160" height="110"/>
+          <text x="100" y="125" text-anchor="middle" font-size="13" class="acc-t">r (Rec)</text>
+          <text x="100" y="150" text-anchor="middle" font-size="12">count = 3</text>
+          <text x="100" y="172" text-anchor="middle" font-size="12">capacity = 10</text>
+          <text x="100" y="196" text-anchor="middle" font-size="12">list ●</text>
+          <text x="100" y="232" text-anchor="middle" font-size="11" class="k mut">실행 한 번에 1개</text>
+
+          <text x="440" y="44" text-anchor="middle" font-size="11" class="k mut">list가 가리키는 Sub* 배열 · 1개 · realloc으로 커짐</text>
+          <rect class="box" x="240" y="56" width="100" height="40"/><text x="290" y="81" text-anchor="middle" font-size="12">Sub*</text>
+          <rect class="box" x="340" y="56" width="100" height="40"/><text x="390" y="81" text-anchor="middle" font-size="12">Sub*</text>
+          <rect class="box" x="440" y="56" width="100" height="40"/><text x="490" y="81" text-anchor="middle" font-size="12">Sub*</text>
+          <rect class="box dash" x="540" y="56" width="100" height="40"/><text x="590" y="81" text-anchor="middle" font-size="11" class="k mut">빈 칸 7개</text>
+          <path class="ln" d="M122,192 C200,192 200,76 236,76" marker-end="url(#a1)"/>
+
+          <line class="ln" x1="290" y1="96" x2="290" y2="146" marker-end="url(#a1)"/>
+          <line class="ln" x1="390" y1="96" x2="390" y2="146" marker-end="url(#a1)"/>
+          <line class="ln" x1="490" y1="96" x2="490" y2="146" marker-end="url(#a1)"/>
+          <rect class="box" x="245" y="150" width="90" height="62"/>
+          <text x="290" y="170" text-anchor="middle" font-size="12">Sub</text><text x="290" y="188" text-anchor="middle" font-size="11">min 30</text><text x="290" y="205" text-anchor="middle" font-size="11">name ●</text>
+          <rect class="box" x="345" y="150" width="90" height="62"/>
+          <text x="390" y="170" text-anchor="middle" font-size="12">Sub</text><text x="390" y="188" text-anchor="middle" font-size="11">min 45</text><text x="390" y="205" text-anchor="middle" font-size="11">name ●</text>
+          <rect class="box" x="445" y="150" width="90" height="62"/>
+          <text x="490" y="170" text-anchor="middle" font-size="12">Sub</text><text x="490" y="188" text-anchor="middle" font-size="11">min 10</text><text x="490" y="205" text-anchor="middle" font-size="11">name ●</text>
+          <text x="560" y="185" font-size="11" class="k mut">Sub · 기록마다 1개</text>
+
+          <line class="ln" x1="290" y1="212" x2="290" y2="246" marker-end="url(#a1)"/>
+          <line class="ln" x1="390" y1="212" x2="390" y2="246" marker-end="url(#a1)"/>
+          <line class="ln" x1="490" y1="212" x2="490" y2="246" marker-end="url(#a1)"/>
+          <rect class="box" x="255" y="250" width="70" height="28"/><text x="290" y="269" text-anchor="middle" font-size="12">"C\0"</text>
+          <rect class="box" x="355" y="250" width="70" height="28"/><text x="390" y="269" text-anchor="middle" font-size="12">"OS\0"</text>
+          <rect class="box" x="455" y="250" width="70" height="28"/><text x="490" y="269" text-anchor="middle" font-size="12">"C\0"</text>
+          <text x="560" y="269" font-size="11" class="k mut">문자열 · 기록마다 1개</text>
+        </svg>
+        <figcaption>list는 Sub를 직접 담지 않고, Sub의 주소를 담은 칸들이 이어진 배열을 가리킵니다. "list가 가리키는 주소가 Sub *를 값으로 들고 있다"는 부분은 맞았습니다. 생각이 꼬인 원인은 이름이었습니다. 제품에서 "기록 하나"에 해당하는 구조체는 <code>Sub</code>인데, <code>Rec</code>(Record)이라는 이름을 가진 쪽이 기록들의 모음이었습니다.</figcaption>
+      </figure>
+      <details class="predict"><summary>예측해 보기: 위 입력에서 malloc은 모두 몇 번 호출될까? (realloc은 없다고 가정)</summary><div>
+        <p><strong>8번입니다.</strong> 그때 바로 답했습니다.</p>
+        <blockquote class="said">이건 알지. Rec 1번, list 1번, Sub으로 3번, 그 안에서 name은 별도니ㅏㄲ 또 3번. 이렇게 해서 8번이잖아.</blockquote>
+        <p>그림의 상자 하나가 malloc 한 번입니다. 개수를 맞힐 수 있다는 것은 각 상자가 언제 생기고 누구의 소유인지 잡혔다는 뜻입니다.</p>
+      </div></details>
+    </div></div>
+    <div class="step"><span class="tag think">생각</span><div class="body">
+      <p>개수는 맞혔지만, 이어서 디스크까지 그림을 넓히다가 다시 어긋났습니다.</p>
+      <blockquote class="said">내가 혼란에 빠졌던 건, "메인 한 번"이 Rec 1번을 생성하는 건데, 그렇다면 실제 기록 상에서는 여러 Rec가 기록의 형태로 디스크에 존재할 것이고, 그들을 한꺼번에 읽기-수정-갱신 하는 과정이었던 것 같네. 즉, Rec 자체는 기본적으로 기록이 쌓일 때마다 존재하는ㄱ ㅓㅅ이고, 그들을 구분하는 기준점이 ID(Date 순서)인 것이지. r-&gt;count 처럼 한개씩 증가할 때마다 부여되는. 맞지?</blockquote>
+    </div></div>
+    <div class="step"><span class="tag shake">흔든 것</span><div class="body">
+      <p>세 군데가 어긋나 있었습니다.</p>
+      <ol>
+        <li><strong>디스크에 있는 것은 여러 Rec이 아니라 파일 하나 안의 여러 행입니다.</strong> 실행 한 번은 "파일 전체를 읽어 Rec 1개를 만든다(행마다 Sub 1개) → 메모리에서 조작한다 → 변경 명령이면 파일 전체를 다시 쓴다 → 해제하고 끝난다"로 흘러갑니다. "한꺼번에 읽기-수정-갱신"이라는 그림 자체는 맞았습니다. 대상이 Rec 여러 개가 아니라 Rec 하나 안의 Sub들일 뿐입니다.</li>
+        <li><strong>ID 순서는 date 순서가 아닙니다.</strong> <code>--date</code>로 날짜를 덮어쓸 수 있으니, 오늘 어제 날짜로 추가하면 ID는 크고 date는 이른 기록이 생깁니다. ID 순서는 add를 실행한 순서입니다.</li>
+        <li><strong>ID는 <code>r-&gt;count</code>와 다른 값입니다.</strong> count는 지금 있는 기록의 수라서 remove하면 줄지만, ID는 한 번 준 번호를 다시 쓰지 않습니다. 그래서 파일에 <code>next_id</code>를 따로 저장합니다.</li>
+      </ol>
+      <details class="predict"><summary>예측해 보기: 빈 파일에서 add 3번 → remove 3 → add 1번. count와 새 ID는?</summary><div>
+        <blockquote class="said">count는 2, 새 ID는 4가 되는구나. 네 말대로, remove라는 작업 자체가 그 다름을 유발하네. ID는 add에 따라 증가하기만 하는 구조라서.</blockquote>
+        <p>새 ID 4는 맞았습니다. count는 마지막 add까지 반영하면 <strong>3</strong>이고, 2는 remove 직후의 값입니다. 결론은 그대로입니다. remove가 한 번이라도 일어나면 count와 ID는 서로 어긋납니다.</p>
+      </div></details>
+    </div></div>
+    <div class="step"><span class="tag think">생각</span><div class="body">
+      <p>배열 안의 ID가 오름차순이라는 것을 확인한 뒤, hash table 없이 ID 4를 찾는 방법을 두 번 제안했습니다.</p>
+      <blockquote class="said">remove한 ID를 다 알고 있으면, '3이 없으니까 3칸만 가자' 이런 식으로 판단이 가능할 것 같으넫. 이런 구조가 맞아?</blockquote>
+      <blockquote class="said">아. 여기서 BST 개념이 나오는 거구나. 생각해 보니까, 파일트리에서 특정 무언가를 찾을 때 BST를 쓴다고 들었어. log N의 시간복잡도가 압도적이라서.</blockquote>
+    </div></div>
+    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+      <p><span class="v half">절반</span>지운 ID 목록으로 index를 계산하는 방법은 성립하지만 비용이 둘 붙습니다. 파일에는 지운 ID가 저장되지 않으니 그 목록을 새 상태로 저장하고 맞춰야 하고, "4보다 작은 지운 ID가 몇 개인가"를 세는 일도 결국 또 하나의 탐색입니다. 문제를 없앤 게 아니라 다른 목록으로 옮긴 것이었습니다.</p>
+      <p><span class="v half">절반</span>"가운데를 보고 절반을 버린다"는 아이디어는 맞았지만 이름이 달랐습니다. 정렬된 <strong>배열</strong>에서 가운데를 보고 범위를 반씩 줄이는 것은 이진 탐색(binary search)입니다. BST는 node마다 자식 pointer를 가진 <strong>tree 자료구조</strong>입니다. 파일 시스템이 주로 쓰는 것은 node 하나에 key를 여러 개 담아 디스크 block 하나로 최대한 많이 걸러 내는 B-tree 계열입니다.</p>
+      <div class="tbl"><table>
+        <tr><th>방법</th><th>ID로 찾기</th><th>list의 ID 오름차순 출력</th><th>추가 구조</th></tr>
+        <tr><td>처음부터 훑기</td><td>O(n)</td><td>배열 순서 그대로</td><td>없음</td></tr>
+        <tr><td>이진 탐색</td><td>O(log n)</td><td>배열 순서 그대로</td><td>없음</td></tr>
+        <tr><td>hash table</td><td>평균 O(1)</td><td>따로 정렬해야 함</td><td>필요</td></tr>
+      </table></div>
+      <p>이 선택은 edit와 remove가 들어오는 Stage 10에서 합니다. 하루에 몇 개씩 쌓이는 기록은 몇 년을 모아도 수천 개 수준이라, 속도 차이는 체감하기 어렵습니다.</p>
+    </div></div>
+  </div>
+
+  <!-- ⑤ -->
+  <div class="chapter">
+    <div class="kicker">⑤ 검사는 어디에</div>
+    <h3 class="dh">입력 지점에서 거르면 충분하다고 생각했다</h3>
+    <div class="step"><span class="tag think">생각</span><div class="body">
+      <blockquote class="said">minutes하고 subject는 입력을 받았을 때 '유효한 지'를 검사하는 것이니까, 명령 실행쪽이지 않을까? 그렇게 잘 걸러진 기록들을 나중에 조회/수정/삭제하는게 기록 관리 쪽이라고 생각하거든?</blockquote>
+    </div></div>
+    <div class="step"><span class="tag shake">흔든 것</span><div class="body">
+      <p>Stage 8부터 기록은 파일에서도 들어옵니다. 누군가 파일을 손으로 고쳐 <code>C&#9;2000</code>이라는 행이 생기면, 이 행도 걸러야 합니다. 처음에는 이것을 edit 명령으로 알아들었습니다.</p>
+      <blockquote class="said">거꾸로 파일을 수정할 때에 그 수정하려는 수치(혹은 과목)가 유효한 지 검사하면 되는거 아냐? 즉, 입력하는 순간 &amp; Update를 하는 순간에만 검사 함수가 들어가면 되지 않냐고.</blockquote>
+      <div class="tbl"><table>
+        <tr><th>수정 방식</th><th>그 순간 study가 실행 중인가</th><th>검사 기회</th></tr>
+        <tr><td><code>study edit 3 --minutes 2000</code></td><td>예</td><td>edit가 값을 받는 순간</td></tr>
+        <tr><td>편집기로 파일을 열어 <code>30</code>을 <code>2000</code>으로 바꿈</td><td>아니요</td><td>다음 실행에서 파일을 읽을 때뿐</td></tr>
+      </table></div>
+      <p>Stage 8 brief의 Done when에도 "파일 중간에 잘못된 시간을 넣어 전체 결과가 거부되는지 확인"이 있습니다. 검사가 필요한 지점은 add 입력, edit 입력, <strong>파일 읽기</strong> 세 곳이고, 세 번째는 argv와 관계가 없습니다.</p>
+    </div></div>
+    <div class="step"><span class="tag think">생각</span><div class="body">
+      <p>상한이 1440에서 600으로 바뀌면 무엇이 바뀌는지를 따져 보았습니다.</p>
+      <blockquote class="said">'유효한 minutes의 정의'가 바뀌게 되는 셈이지. 즉, 그렇게 된다면, 내가 생각하기엔 사실 CRUD를 담당하는 녀석들 전부가 바뀌어야 하는 것 같아. 정확히 말하면, 각 core에 들어있는 에러코드 조건분기에서 판단값이 바뀌겠지. ... 그 논리대로라면 interface는 "무엇을 보여주는가"가 바뀌는 느낌이라고 생각하긴 했는데, 만약 그렇다면 interface module은 fprintf()말고 뭘 하는건가 싶은 생각이 들어ㅓ.</blockquote>
+    </div></div>
+    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+      <p><span class="v ok">맞음</span>상한 변경은 "유효한 기록의 정의"가 바뀐 것이므로 core의 변경입니다.</p>
+      <p><span class="v no">틀림</span>CRUD 전부가 바뀌면 안 됩니다. 조건분기가 add와 edit에 흩어져 있으면 전부 고쳐야 하고, 하나라도 빠뜨리면 버그가 됩니다. 그래서 검사를 core 안의 <strong>함수 하나</strong>로 두고 add, edit, 파일 읽기가 그 함수를 호출합니다. R과 D는 minutes를 새로 받지 않으니 검사할 일이 없습니다.</p>
+      <p>interface는 fprintf만 하지 않습니다. 사용자와 core 사이의 번역기입니다.</p>
+      <div class="tbl"><table>
+        <tr><th>방향</th><th>하는 일</th><th>예시</th></tr>
+        <tr><td>들어오는 쪽</td><td>argv를 명령과 값으로 해석</td><td><code>argv[1]</code>이 <code>list</code>인가, 인자 개수가 맞나, Stage 9의 옵션 순서·중복·값 누락</td></tr>
+        <tr><td>조율</td><td>core 함수를 올바른 순서로 호출</td><td>모음 생성 → 기록 추가 반복 → 순회 → 해제</td></tr>
+        <tr><td>나가는 쪽</td><td>결과를 사람이 읽는 형태로</td><td>목록의 줄 형식, <code>Total: N minutes</code>, help 문구</td></tr>
+        <tr><td>실패 처리</td><td>core의 실패를 문구와 exit code로</td><td>잘못된 값이면 2, 메모리 부족이면 1</td></tr>
+      </table></div>
+    </div></div>
+  </div>
+
+  <!-- ⑥ -->
+  <div class="chapter">
+    <div class="kicker">⑥ 왜 module로 나누나</div>
+    <h3 class="dh">함수로 이미 나눴는데 파일까지 나눌 이유가 보이지 않았다</h3>
+    <div class="step"><span class="tag think">생각</span><div class="body">
+      <blockquote class="said">지금 CRUD라는 관점으로 본다면, 어떻게 모듈화를 해야 할 지 감이 잘 안 잡혀. C, R, U, D가 각각 하나의 모듈을 차지하지는 않을거 아냐. ... 사실, 아직도 '함수 단위'와 '모듈 단위'로 나누는 기준점을 명확하게 몰라서 하는 말이야.</blockquote>
+      <blockquote class="said">지금 practice6.c같은 경우에도 그런 로직적인 부분들은 별도 함수로 빼놓고, main()에서 그것들을 차례차례 실행하는 느낌이 있잖아? 이런 점에서 main()이 interface이고 core가 개별적인 함수들이라고 볼 수 있지. 이런 점에서 "왜 모듈을 분리해야 하는가"가 궁금한 거야. 단순히 "기능적인 구분이나 인간이 보기 좋으려고"는 아닐 거 아냐.</blockquote>
+    </div></div>
+    <div class="step"><span class="tag shake">흔든 것</span><div class="body">
+      <p>처음 받은 답은 네 가지 기계적 이유였습니다. 경계를 compiler가 지켜 준다, <code>static</code>으로 파일 단위 비공개를 만든다, 다른 <code>main</code>과 결합할 수 있다, 바뀐 파일만 다시 컴파일한다. 와닿지 않았습니다.</p>
+      <blockquote class="said">솔직하게 얘기하면, 지금 와닿지는 않거든? 뭔가 더 추상화를 한다는 개념보다는, 느낌상 로직이나 파일과 관련된 이야기 외부의 이야기인 느낌인 지라. .. 아닌가?</blockquote>
+      <p>이 말이 "header가 왜 선언만 담나"라는 질문으로 잘못 읽혀서, 분할 컴파일 과정을 먼저 설명받았습니다. 질문과는 엇갈렸지만, 뒤의 이해를 받치는 바닥이 되었으므로 그림으로 남깁니다.</p>
+      <figure>
+        <div class="fig-title dh">.c는 따로 컴파일되고, linker가 빈 주소를 채운다</div>
+        <svg viewBox="0 0 740 220" role="img" aria-label="main.c와 record.c가 각각 따로 컴파일되어 main.o와 record.o가 되고, linker가 main.o의 비어 있는 Sub_add 주소를 record.o의 본문 위치로 채워 study를 만드는 과정">
+          <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker></defs>
+          <rect class="box" x="20" y="30" width="150" height="46"/>
+          <text x="95" y="50" text-anchor="middle" font-size="13">main.c</text><text x="95" y="67" text-anchor="middle" font-size="11" class="mut">+ record.h 붙여 넣기</text>
+          <rect class="box" x="20" y="140" width="150" height="46"/>
+          <text x="95" y="160" text-anchor="middle" font-size="13">record.c</text><text x="95" y="177" text-anchor="middle" font-size="11" class="mut">+ record.h 붙여 넣기</text>
+          <line class="ln" x1="172" y1="53" x2="276" y2="53" marker-end="url(#a3)"/><text x="224" y="45" text-anchor="middle" font-size="11">gcc -c</text>
+          <line class="ln" x1="172" y1="163" x2="276" y2="163" marker-end="url(#a3)"/><text x="224" y="155" text-anchor="middle" font-size="11">gcc -c</text>
+          <rect class="box" x="280" y="30" width="180" height="46"/>
+          <text x="370" y="50" text-anchor="middle" font-size="13">main.o</text><text x="370" y="67" text-anchor="middle" font-size="11" class="k mut">Sub_add 주소: 비어 있음</text>
+          <rect class="box" x="280" y="140" width="180" height="46"/>
+          <text x="370" y="160" text-anchor="middle" font-size="13">record.o</text><text x="370" y="177" text-anchor="middle" font-size="11" class="k mut">Sub_add 본문</text>
+          <line class="ln" x1="462" y1="53" x2="536" y2="100" marker-end="url(#a3)"/>
+          <line class="ln" x1="462" y1="163" x2="536" y2="118" marker-end="url(#a3)"/>
+          <rect class="acc" x="540" y="88" width="80" height="40"/><text x="580" y="113" text-anchor="middle" font-size="13" class="acc-t">linker</text>
+          <line class="ln" x1="622" y1="108" x2="656" y2="108" marker-end="url(#a3)"/>
+          <rect class="box" x="660" y="88" width="66" height="40"/><text x="693" y="113" text-anchor="middle" font-size="13">study</text>
+          <text x="580" y="152" text-anchor="middle" font-size="11" class="k mut">빈 주소를 본문 위치로 채움</text>
+        </svg>
+        <figcaption>compiler는 <code>main.c</code>를 컴파일하는 동안 <code>record.c</code>를 보지 못합니다. 그래서 호출할 함수의 모양(원형)을 선언으로 알려 주고, <code>#include</code>는 그 선언을 텍스트 그대로 붙여 넣습니다. header에 본문까지 넣으면 두 <code>.o</code>에 같은 본문이 생겨 <code>multiple definition</code> 오류가 납니다. 선언은 여러 번이어도 되지만 정의는 프로그램 전체에서 정확히 한 번이어야 합니다.</figcaption>
+      </figure>
+      <p>그래서 질문을 다시 짚었습니다.</p>
+      <blockquote class="said">헤더가 왜 선언만 담는지를 물어본게 아니야. 내 말은 "왜 그런 노력을 해가면서까지 모듈 분리를 해야 하냐"였던 거긴 했어. ... 이 내용들이 단순히 추상화나 로직의 깔끔함과 별개의 내용같다는 말을 한 거지.</blockquote>
+      <p>이 관찰은 정확했습니다. <strong>module 분리는 로직을 바꾸지 않습니다.</strong> 파일이 하나든 셋이든 프로그램은 똑같이 동작하고, 로직의 깔끔함은 함수를 잘 나누는 것만으로 대부분 얻습니다. module 분리는 그 깔끔함이 <strong>시간이 지나도 유지되게 하는 장치</strong>입니다. "main은 기록의 내부 모양을 모른다"는 추상화는 약속이고, 한 파일 안에서 그 약속을 지키는 것은 사람의 주의력뿐입니다. 급하게 기능을 붙일 때 <code>main</code>에서 <code>r-&gt;list[i]</code>를 직접 만지는 게 가장 빠른 길이 되고, 한 번 새기 시작하면 경계는 이름만 남습니다.</p>
+    </div></div>
+    <div class="step"><span class="tag think">생각</span><div class="body">
+      <blockquote class="said">'기능적인 분리 및 함수 설정'만 잘 해놓으면, 한 파일로 만들어도 된다는 뜻으로 들리기도 하거든. 실제로 그런 경우가 존재할 것 같기도 하고. 솔직히, 당장 내가 드는 느낌으로는 "내부 코드를 완벽하게 격리된 공간(선언만 공유하고)을 하나 만들겠다."라는 뜻으로 들리거든. 그럼으로써 전처리기나 linker라는 장치를 오히려 더 거쳐야 하고. 그 메인 효용은 가독성이나 기능별 분리 정도로 보여서. 이게, HTTP 통신에서처럼 SQL DB/python backend/javascript frontend 이런 느낌으로 언어나 프레임워크 자체가 달라버리는 건 아니니까. 혹시, 내 말이 틀렸을까/</blockquote>
+    </div></div>
+    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+      <p><span class="v ok">맞음</span><strong>한 파일이어도 됩니다.</strong> SQLite는 수십 개의 source를 <code>sqlite3.c</code> 하나로 합친 amalgamation을 배포하고, stb 같은 library는 header 파일 하나로 되어 있습니다.</p>
+      <p><span class="v ok">맞음</span><strong>격리된 공간을 만든다</strong>는 표현이 정확합니다.</p>
+      <p><span class="v ok">맞음</span><strong>HTTP 구조와 다르다</strong>는 관찰이 핵심이었습니다. DB, backend, frontend는 process나 기계나 언어가 물리적으로 달라서 경계가 저절로 생깁니다. C의 module은 같은 process, 같은 메모리 안에 있어서 경계가 저절로 생기지 않고, 파일 분리와 header로 <strong>인위적으로</strong> 만듭니다. "노력"이라고 느낀 것이 바로 이 인위성입니다.</p>
+      <p><span class="v no">틀림</span><strong>전처리기와 linker는 더 거치는 단계가 아닙니다.</strong> 파일이 하나뿐인 <code>practice6.c</code>도 <code>#include &lt;stdio.h&gt;</code>에서 전처리기를, <code>printf</code>의 본문을 libc에서 찾아 붙일 때 linker를 이미 거칩니다. 파일을 나누면 같은 단계에 들어가는 입력이 늘어날 뿐입니다.</p>
+      <p><span class="v no">틀림</span><strong>효용이 가독성뿐인 것은 아닙니다.</strong> core를 다른 <code>main</code>과 붙여 쓰는 것은 가독성과 무관한 능력입니다. 다음 장이 이 이야기입니다.</p>
+    </div></div>
+  </div>
+
+  <!-- ⑦ -->
+  <div class="chapter">
+    <div class="kicker">⑦ main이 둘 이상인 이유</div>
+    <h3 class="dh">core 하나에 입구가 여러 개</h3>
+    <div class="step"><span class="tag think">생각</span><div class="body">
+      <blockquote class="said">이 부분만 명확하게 잡히면 고개를 끄덕이고 넘어갈 수 있을 것 같아. "두 개 이상의 main이 왜 필요할까?"</blockquote>
+    </div></div>
+    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+      <p>"main이 두 개"는 <strong>같은 core를 쓰는 프로그램이 둘 이상</strong>이라는 뜻입니다. 프로그램 하나에는 <code>main</code>이 정확히 하나라서, 쓰는 프로그램이 늘면 <code>main</code>도 늘어납니다.</p>
+      <figure>
+        <div class="fig-title dh">core는 한 벌, 입구는 여러 개</div>
+        <svg viewBox="0 0 720 230" role="img" aria-label="SQLite의 sqlite3.c 하나를 sqlite3 명령어, 브라우저, Python이 각자 link하듯이, study의 record.c 하나를 study, 테스트 프로그램, TUI가 각자 link하는 구조">
+          <defs><marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker></defs>
+          <text x="20" y="18" font-size="13" class="k">SQLite</text>
+          <rect class="box" x="20" y="34" width="170" height="36"/><text x="105" y="57" text-anchor="middle" font-size="11" class="k">sqlite3 명령어 · shell.c</text>
+          <rect class="box" x="20" y="100" width="170" height="36"/><text x="105" y="123" text-anchor="middle" font-size="11" class="k">Chrome · Firefox · Android</text>
+          <rect class="box" x="20" y="166" width="170" height="36"/><text x="105" y="189" text-anchor="middle" font-size="11" class="k">Python sqlite3 module</text>
+          <rect class="acc" x="240" y="100" width="100" height="36"/><text x="290" y="123" text-anchor="middle" font-size="12" class="acc-t">sqlite3.c</text>
+          <line class="ln" x1="192" y1="52" x2="236" y2="110" marker-end="url(#a4)"/>
+          <line class="ln" x1="192" y1="118" x2="236" y2="118" marker-end="url(#a4)"/>
+          <line class="ln" x1="192" y1="184" x2="236" y2="126" marker-end="url(#a4)"/>
+          <text x="214" y="112" text-anchor="middle" font-size="10" class="mut">link</text>
+
+          <line class="ln dash" x1="360" y1="20" x2="360" y2="210"/>
+
+          <text x="380" y="18" font-size="13" class="k">study</text>
+          <rect class="box" x="380" y="34" width="170" height="36"/><text x="465" y="57" text-anchor="middle" font-size="11" class="k">study · main.c (지금)</text>
+          <rect class="box" x="380" y="100" width="170" height="36"/><text x="465" y="123" text-anchor="middle" font-size="11" class="k">test_core (Stage 10)</text>
+          <rect class="box dash" x="380" y="166" width="170" height="36"/><text x="465" y="189" text-anchor="middle" font-size="11" class="k">study-tui (확장 후보)</text>
+          <rect class="acc" x="600" y="100" width="100" height="36"/><text x="650" y="123" text-anchor="middle" font-size="12" class="acc-t">record.c</text>
+          <line class="ln" x1="552" y1="52" x2="596" y2="110" marker-end="url(#a4)"/>
+          <line class="ln" x1="552" y1="118" x2="596" y2="118" marker-end="url(#a4)"/>
+          <line class="ln dash" x1="552" y1="184" x2="596" y2="126" marker-end="url(#a4)"/>
+          <text x="574" y="112" text-anchor="middle" font-size="10" class="mut">link</text>
+        </svg>
+        <figcaption>SQLite를 하나로 합친 <code>sqlite3.c</code>에도 명령어의 <code>main</code>은 들어 있지 않고 <code>shell.c</code>가 따로 있습니다. 브라우저가 SQLite를 가져다 쓸 때 명령어의 <code>main</code>이 딸려 오면 안 되기 때문입니다. curl(<code>src/tool_main.c</code>와 libcurl), FFmpeg(<code>fftools/ffmpeg.c</code>와 libavcodec)도 같은 구조입니다. study도 core가 독립된 파일이어야 테스트와 TUI가 각자 link할 수 있습니다.</figcaption>
+      </figure>
+      <p>셋 중 가장 가까운 것은 Stage 10의 테스트입니다. <code>./study</code>를 shell에서 실행하면 보이는 것은 stdout, stderr, exit code뿐입니다. 그런데 Stage 10은 배열 확장과 deep copy를 검증하라고 요구합니다. deep copy를 확인하려면 버퍼에 <code>"C"</code>를 넣고 add한 다음, 그 버퍼를 <code>"X"</code>로 덮어쓰고, 기록의 subject가 여전히 <code>"C"</code>인지 봐야 합니다. argv로는 두 번째 단계를 할 방법이 없습니다.</p>
+    </div></div>
+    <div class="step"><span class="tag think">생각</span><div class="body">
+      <p>capacity 확장을 <code>./study</code>의 출력만으로 검증할 수 있느냐는 질문에 이렇게 답했습니다.</p>
+      <blockquote class="said">지금 관점에서는 당연히 realloc()으로 배여링 커진다는 사실을 어렵지 않게 알 수 있지. 왜냐하면, 그 Sub_add() 함수가 r-&gt;capacity하고 r-&gt;count를 바탕으로 직접 카운트를 해주고, 그 이후에 perror()를 송출해주니까. ... 만약에 모듈화를 한다고 하면, Sub_add가 interface로 가되, "r-&gt;capacity하고 r-&gt;count가 같아지는 지 판단하기 위해, core로 Sub_add 판정 함수를 보내라"라는 명령어가 짧게 나오고, ... 음.. 뭔가 함수안에 함수처럼 이해했는데, 이런 이해가 맞아?</blockquote>
+    </div></div>
+    <div class="step"><span class="tag fix">고친 그림</span><div class="body">
+      <p><span class="v no">틀림</span><strong><code>Sub_add</code>는 통째로 core에 갑니다.</strong> capacity 검사, realloc, malloc, 복사가 모두 "기록을 어떻게 담는가"라는 core의 비밀입니다. interface는 <code>Sub_add(r, argv[i - 1], tmp)</code> 한 줄로 호출만 합니다. 함수 안의 함수가 아니라, 다른 파일에 있는 함수를 부르는 것뿐입니다.</p>
+      <p><span class="v no">틀림</span><strong>코드를 읽어서 아는 것과 실행 결과로 확인하는 것은 다릅니다.</strong> <code>perror</code>는 realloc이 실패할 때만 출력되므로, 배열이 성공적으로 커지면 <code>./study</code>는 아무 흔적도 남기지 않습니다. 출력만으로는 capacity가 20으로 늘었는지 처음부터 100이었는지 구분할 수 없습니다. 테스트의 <code>main</code>은 기록을 11개 추가한 뒤 <code>r-&gt;capacity</code>가 20인지 직접 읽습니다.</p>
+      <details class="predict"><summary>예측해 보기: 두 번째 main이 없으면 검증할 수 없는 것을 하나 더 떠올려 보면?</summary><div>
+        <p>한 예는 <strong><code>Sub_add</code>가 실패한 뒤의 모음 상태</strong>입니다. 기록 두 개를 넣은 상태에서 세 번째 <code>Sub_add</code>가 메모리 부족으로 실패하면, 앞의 두 기록과 <code>count</code>는 그대로 2여야 합니다. <code>./study</code>는 이 경우 exit 1로 끝날 뿐이라 그 순간의 모음을 보여 주지 않습니다. 테스트의 <code>main</code>은 할당 실패를 일으킨 직후 <code>count</code>와 두 기록의 내용을 직접 확인할 수 있습니다. 사용자에게 보이는 것만 보여 주는 입구와, core의 내부 상태를 직접 확인하는 입구가 따로 있어야 하는 이유입니다.</p>
+      </div></details>
+    </div></div>
+  </div>
+
+  <div class="band">
+    <div class="kicker">⑧ 말보다 코드</div>
+    <blockquote class="said">솔직히 지금 게속 말로 하는게 굉장히 비효율적인 것 같다는 생각이 들긴하거든? 한 번, 그냥 지금 상태 기준으로 practice6.c를 interface/core로 분리해서 모듈화를 해주면 좋겠다는 생각이 들어. 보는게 이해하기에 가장 빠를거 같아서. 약간의 자율성을 희생한다고 할 지라도.</blockquote>
+    <p>그래서 <code>practice6.c</code>를 한 줄도 고치지 않고 <code>record.h</code>, <code>record.c</code>, <code>main.c</code>로 기계적으로 나눈 판을 먼저 보았습니다(<code>lab/split6/</code>). 동작은 원본과 같았습니다. 그 판을 놓고 "무엇이 아직 경계를 넘나드는가"를 grilling 두 라운드로 따졌고, 그 결정이 3부입니다.</p>
+  </div>
+</section>
+
+<!-- ═══════════ PART 3 ═══════════ -->
+<section class="part p3" id="part3">
+  <div class="part-head">
+    <div class="bignum dh">3</div>
+    <div class="part-title">
+      <h2 class="dh">Stage 7 진입 결정</h2>
+      <div class="oneline">기계적으로 나눈 판에서 경계를 넘는 곳을 찾고, 막는 방법을 정했습니다.</div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h3 class="dh">여섯 가지 결정</h3>
+    <div class="tbl"><table>
+      <tr><th>#</th><th>결정</th><th>이유</th></tr>
+      <tr><td class="c"><b>Q1</b></td><td>구조체 정의를 <code>record.c</code>로 숨긴다 (opaque type)</td><td><code>main</code>이 "배열로 담는다"는 비밀을 알면 core를 바꿀 때 <code>main</code>이 깨진다. 출력 반복문만 남았고, Stage 7 순회가 그것을 대체한 뒤 정의를 옮긴다.</td></tr>
+      <tr><td class="c"><b>Q2</b></td><td><code>new_record</code> 하나가 배열까지 확보한다</td><td>생성이 한 번의 호출로 끝나면 호출하는 쪽은 <code>NULL</code>만 확인하면 된다. <code>Sub_add</code>의 "실패하면 자기가 확보한 것을 해제하고 <code>NULL</code>" 규칙을 생성에도 적용했다.</td></tr>
+      <tr><td class="c"><b>Q3</b></td><td>core는 출력하지 않는다</td><td>문구와 출력 위치는 interface의 약속이다. TUI와 테스트 <code>main</code>도 같은 core를 쓴다.</td></tr>
+      <tr><td class="c"><b>Q4</b></td><td>minutes·subject 검사는 core의 함수</td><td>유효한 기록의 정의다. add 입력, edit 입력, 파일 읽기가 모두 호출한다.</td></tr>
+      <tr><td class="c"><b>Q5</b></td><td>함수마다 실패는 한 종류</td><td>검사 실패는 exit 2, <code>NULL</code>은 메모리 부족이라 exit 1. interface가 매핑한다.</td></tr>
+      <tr><td class="c"><b>Q6</b></td><td>연속 subject 경고는 interface가 argv만으로 판단</td><td>입력 습관에 대한 확인이지 기록의 규칙이 아니다. 파일에는 같은 과목이 연달아 있어도 정상이다.</td></tr>
+    </table></div>
+    <p>Q5와 Q6에는 그때 되물은 말이 있습니다.</p>
+    <blockquote class="said"><span class="who">Q5</span>이게 결국엔, core가 '어떤 실패인지 알려주면' interface가 그 실패를 'perror() 혹은 exit(status)'로 받아주기만 하면 되는 거잖아?</blockquote>
+    <p>맞습니다. 다만 <code>perror</code>는 <code>errno</code>를 읽는 함수라서 시스템 호출이 실패한 경우(exit 1)에만 쓰고, 값 오류(exit 2)는 <code>fprintf(stderr, ...)</code>로 직접 씁니다.</p>
+    <blockquote class="said"><span class="who">Q6</span>연속 subject 경고에 대한 '판단'을 core한테 일임하지 않고 argc/argv를 interface가 갖고 있으니까 그쪽에서 알아서 처리해도 되지 않냐는 말 같은데, 이게 일관성에서 크게 문제가 없다고 너는 판단하는 건가 싶어서.</blockquote>
+    <p>Q4와 Q6은 같은 기준("무엇 때문에 바뀌나?")을 적용한 결과가 다르게 나온 것이라서 오히려 일관됩니다. 검사 규칙은 모든 입력 경로가 지켜야 하므로 core에 있고, 연속 경고는 이 명령의 입력 습관에 대한 확인이라 바꾸거나 없애도 CLI만 영향을 받습니다.</p>
+  </div>
+
+  <div class="block">
+    <h3 class="dh">지금의 코드</h3>
+    <p><code>main</code>이 core에 대해 알 수 있는 것은 header가 전부입니다. header부터 읽으면 경계가 보입니다.</p>
+    <div class="codebox"><div class="cap"><span>projects/study-cli/record.h</span><span>초록 줄이 Stage 7에서 옮길 부분</span></div><pre><span class="ln">#ifndef RECORD_H</span>
+<span class="ln">#define RECORD_H</span>
+<span class="ln"></span>
+<span class="ln">#include &lt;stddef.h&gt;</span>
+<span class="ln"></span>
+<span class="ln">#define MINUTES_MIN 1</span>
+<span class="ln">#define MINUTES_MAX 1440</span>
+<span class="ln"></span>
+<span class="ln">typedef struct _subject{</span>
+<span class="ln">    int minutes;</span>
+<span class="ln">    char *name;</span>
+<span class="ln">} Sub;</span>
+<span class="ln"></span>
+<span class="ln">// Stage 7: the definition moves into record.c once main no longer reads it.</span>
+<span class="ln mark">typedef struct _Record{</span>
+<span class="ln mark">    size_t count;</span>
+<span class="ln mark">    size_t capacity;</span>
+<span class="ln mark">    Sub **list; // In order to make Dynamic Array.</span>
+<span class="ln mark">} Rec;</span>
+<span class="ln"></span>
+<span class="ln">// Each returns NULL on allocation failure; errno is left for perror.</span>
+<span class="ln">Rec *new_record(void);</span>
+<span class="ln">Sub *Sub_add(Rec *r, const char *name, int minutes);</span>
+<span class="ln">void record_free(Rec *r);</span>
+<span class="ln"></span>
+<span class="ln">// Each returns 1 if valid, 0 if not. minutes_parse stores the value in *out.</span>
+<span class="ln">int subject_valid(const char *name);</span>
+<span class="ln">int minutes_parse(const char *text, int *out);</span>
+<span class="ln"></span>
+<span class="ln">#endif</span></pre></div>
+    <p>남은 누출은 하나입니다. <code>main</code>이 배열을 직접 돕니다.</p>
+    <div class="codebox"><div class="cap"><span>projects/study-cli/main.c · 출력 부분</span><span>붉은 줄이 마지막 누출</span></div><pre><span class="ln">    // The last leak: main walks the array itself. Stage 7 replaces this loop.</span>
+<span class="ln markbad">    for (size_t i = 0; i &lt; r-&gt;count; i++){</span>
+<span class="ln markbad">        printf("Subject : %s\n- Minutes : %d\n", r-&gt;list[i]-&gt;name, r-&gt;list[i]-&gt;minutes);</span>
+<span class="ln markbad">    }</span></pre></div>
+    <p>이 반복문을 Stage 7의 "순회 한 곳 + 함수 포인터"로 바꾼 뒤, 초록 줄의 구조체 정의를 <code>record.c</code>로 옮깁니다. <strong>옮긴 뒤에 컴파일이 통과하면 경계가 완전히 막힌 것</strong>이고, 이 컴파일이 Stage 7의 마지막 검사가 됩니다.</p>
+    <p>세팅을 마친 시점의 검증 결과입니다. workshop warning flag로 경고 없이 빌드되고, Stage 6 검사 15개(<code>lab/test_stage6_record_model.sh</code>)가 <code>./study</code>와 <code>practice6.c</code> 모두에서 통과하고, 기록 11개(realloc 발생)에서 valgrind 오류와 누수가 없고, 할당 실패를 1–5번째와 23–25번째에 주입해도 모두 exit 1로 끝납니다.</p>
+  </div>
+
+  <div class="block">
+    <h3 class="dh">아직 열려 있는 질문</h3>
+    <ul>
+      <li><strong>순회 함수의 원형과 누적값의 보관 위치</strong>: Stage 7 brief가 직접 설계하라고 지정한 부분입니다. 기록별 동작 함수는 호출될 때마다 지역 변수가 사라지므로, 합계는 callback 바깥 어딘가에 살아 있어야 하고 순회가 끝난 뒤 읽을 수 있어야 합니다. Stage 4의 <code>self</code>가 풀던 문제와 같습니다.</li>
+      <li><strong>command 자리</strong>: <code>argv[1]</code>이 명령이 되면 짝수·홀수 검사와 인덱스 규칙이 한 칸씩 밀립니다.</li>
+      <li><strong>ID로 찾는 방법</strong>: 처음부터 훑기, 이진 탐색, hash table 중 하나를 Stage 10에서 고릅니다.</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <h3 class="dh">Logseq에 남긴 요약</h3>
+    <p>세션이 끝날 무렵 "왜 module로 나누나"를 Logseq에 직접 정리했습니다. 처음 적은 판을 그대로 두고, 검토에서 고친 판을 아래에 붙입니다.</p>
+    <div class="codebox"><div class="cap"><span>처음 적은 판</span><span>그대로 옮김</span></div><pre><span class="ln">- ### Understanding Module Structure</span>
+<span class="ln">    - The Reasond of Moduling</span>
+<span class="ln markbad">        - Double Main()</span>
+<span class="ln markbad">            - Capsulizing(hiding core logic)</span>
+<span class="ln">            - Borrowing Logic in different interface</span>
+<span class="ln">    - Example in my Project(Study Log)</span>
+<span class="ln">        - Interface(Frontend)</span>
+<span class="ln">        - Core(Backend)</span>
+<span class="ln markbad">            - ex&gt; SQlite3.c should be implementing, during Chrome &amp; Python</span>
+<span class="ln markbad">            - ex&gt; Because of moduling process, SQlite3.c doesn't remain just a shell programm.</span></pre></div>
+    <ul>
+      <li><strong>계층</strong>: 캡슐화와 main이 여러 개인 것은 서로 독립된 이유 두 개입니다. 캡슐화가 main이 여러 개인 데서 나오지 않습니다.</li>
+      <li><strong>SQLite의 자리</strong>: study의 예가 아니라 "main이 여러 개" 이유의 실제 사례입니다.</li>
+      <li><strong>Frontend/Backend 비유</strong>: HTTP와 달리 같은 process, 같은 메모리 안이라서 경계를 인위적으로 만든다는 단서가 필요합니다.</li>
+      <li><strong>용어</strong>: Moduling → Modularizing, Capsulizing → Encapsulation, Double → Multiple.</li>
+    </ul>
+    <div class="codebox"><div class="cap"><span>고친 판</span><span>초록 줄이 옮기거나 더한 부분</span></div><pre><span class="ln">- ### Understanding Module Structure</span>
+<span class="ln">    - Reasons for Modularizing</span>
+<span class="ln mark">        - Encapsulation (hiding core logic)</span>
+<span class="ln mark">            - The header shows only declarations, so the compiler guards the boundary</span>
+<span class="ln mark">            - Same process, same memory: the boundary is artificial (unlike HTTP layers)</span>
+<span class="ln mark">        - Multiple main() (two or more programs share one core)</span>
+<span class="ln">            - Borrowing logic in a different interface</span>
+<span class="ln mark">            - ex&gt; Chrome, Android, and Python link sqlite3.c</span>
+<span class="ln mark">            - ex&gt; The CLI main() lives in shell.c, so sqlite3.c does not remain just a shell program</span>
+<span class="ln">    - Example in my Project (Study Log)</span>
+<span class="ln">        - Interface (like a frontend): main.c</span>
+<span class="ln">        - Core (like a backend): record.c</span>
+<span class="ln mark">        - Storage: from Stage 8</span>
+<span class="ln mark">        - Other main() for this core: test_core (Stage 10), study-tui (candidate)</span></pre></div>
+  </div>
+</section>
+
+<footer>
+  <p>동작의 기준은 <code>projects/study-cli/README.md</code>와 각 stage의 brief입니다. 이 문서는 그 계약을 내가 읽은 방식과 내린 결정을 기록합니다. 매일 고치는 원본은 같은 디렉터리의 <code>DESIGN.md</code>이고, 이 문서는 stage를 마칠 때마다 한 장씩 갱신하는 정리본입니다. 2부의 인용은 2026-09-29 세션 기록에서 그대로 옮겼습니다.</p>
+</footer>
+
+</div>
+</body>
+</html>
