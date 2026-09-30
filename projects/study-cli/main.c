@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "record.h"
+#include "storage.h"
 
 void print_input(const char *name, int minutes){
     printf("Subject : %s\n- Minutes : %d\n", name, minutes);
@@ -31,14 +32,11 @@ int argv_check(Rec *r, int argc, char *argv[]){
             return 2;
         } if (i > 3 && strcmp(argv[i - 1], argv[i - 3]) == 0){ // Previous pair's subject.
             fprintf(stderr, "You entered same sub/values. Are you that steady at %s? or just double entered?\n\n", argv[i - 1]);
-        }
-
-        if (!minutes_parse(argv[i], &minutes)){
+        } if (!minutes_parse(argv[i], &minutes)){
             fprintf(stderr, "Minutes must be an integer from %d to %d\n", MINUTES_MIN, MINUTES_MAX);
             // status = 2; goto cleanup;
             return 2;
-        }
-        if (!Sub_add(r, argv[i - 1], minutes)){
+        } if (!Sub_add(r, argv[i - 1], minutes)){
             perror("Allocation failed");
             // status = 1; goto cleanup;
             return 1;
@@ -54,14 +52,29 @@ int main(int argc, char *argv[]){
     if (!r){ perror("Allocation failed"); exit(1); }
 
     if (argv[1] != NULL && strcmp(argv[1], "list") == 0){
-        if (argc == 2){ // Because argv[0] is command & argv[1] is sub-command.
-            fprintf(stdout, "No entries.\n");
-        } status = argc_check(argc);
-        if (status){ goto cleanup; }
-        status = argv_check(r, argc, argv);
-        if (status){ goto cleanup; }
-        Read_list(r, print_input);
+        if (argc != 3){
+            fprintf(stderr, "Usage: %s list <file_path>\n", argv[0]);
+            status = 2; goto cleanup;
+        }
+
+        size_t err_line = 0;
+        int stat = file_read(r, argv[2], &err_line);
+
+        if (stat == STORAGE_OK){
+            Read_list(r, print_input);
+            status = 0;
+        } else if (stat == STORAGE_ERR_IO){
+            fprintf(stderr, "Error: cannot read file '%s'\n", argv[2]);
+            status = 1; goto cleanup;
+        } else if (stat == STORAGE_ERR_FORMAT){
+            fprintf(stderr, "Error: corrupted file '%s' at line %zu\n", argv[2], err_line);
+            status = 1; goto cleanup;
+        } else if (stat == STORAGE_ERR_NOMEM){
+            perror("Allocation failed");
+            status = 1; goto cleanup;
+        }
     }
+
     else if (argv[1] != NULL && strcmp(argv[1], "total") == 0){
         status = argc_check(argc);
         if (status){ goto cleanup; }
@@ -78,3 +91,13 @@ int main(int argc, char *argv[]){
     record_free(r);
     exit(status);
 }
+
+// ====== would be used in "save" =========;
+// if (argc == 2){ // Because argv[0] is command & argv[1] is sub-command.
+//     fprintf(stdout, "No entries.\n");
+// } status = argc_check(argc);
+// if (status){ goto cleanup; }
+// status = argv_check(r, argc, argv);
+// if (status){ goto cleanup; }
+// Read_list(r, print_input);
+// ====== would be used in "save" =========;

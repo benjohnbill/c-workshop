@@ -361,3 +361,89 @@ list, so the core must report whether it holds records; the `FILE *` module
 must keep earlier records intact when the read buffer is reused. Carried from
 this stage: one traversal for `list` and `total` before the Stage 10 filters,
 and the in-process check that lists and totals one `Rec`.
+
+## 2026-10-01 — Stage 8: Save and Load, session close
+
+**Outcome:** session closed; the stage is not passed. The `list PATH` read
+path works: `storage.c` reads the TSV file into the `Rec` that `main`
+creates, and `main` prints the records or an error. `save PATH`,
+`total PATH`, the empty-list output `No entries.`, and the Stage 8 gates
+remain.
+
+**Assistance:** concrete-hint. On request the tutor added the `storage.o`
+lines to the Makefile and step TODO comments (intent and hints; the learner
+removed them), and wrote the probe `lab/buffer_probe.c`. One direct-fix: at
+the learner's decision the tutor deleted the branch that stripped `\r`
+before `\n`.
+
+**Demonstrated:**
+
+- Predicted from `_IO_read_ptr` in gdb that a second `fread(mine, 1, 8, f)`
+  leaves `minutes\n` in `mine`. Predicted that `fgets` with size 8 returns
+  `subject` and then `\tminute`, and explained that `size - 1` decides the
+  cut.
+- Named the whole-line signal: a line read to its end still holds `\n`;
+  otherwise it was cut or is the last line.
+- Reasoned that a record must own a copy made before the read buffer is
+  reused, then located that copy in `Sub_add` (`strlen + 1`, `memcpy`), so
+  `storage.c` passes pointers into its own buffer.
+- Carried the Stage 7 ownership rule: `main` creates and frees `Rec`;
+  storage only fills it and closes the `FILE *` it opened.
+- Designed `file_read(Rec *r, const char *file, size_t *err_line)`: the
+  return value gives the kind (`STORAGE_OK`, `STORAGE_ERR_IO`,
+  `STORAGE_ERR_FORMAT`, `STORAGE_ERR_NOMEM`), and the line number goes
+  through an out-parameter, the pattern of `minutes_parse`.
+- Wrote `\0` over the tab and the newline in the read buffer, arguing that
+  the buffer belongs to his code.
+- Chose `fgets` over `fread` with a manual search and over `getline` on
+  cleanup, code size, and build flags, and knew its cost: lines longer than
+  the buffer.
+- Counted the header as line 1 so that the number matches an editor.
+
+**Corrected:**
+
+- The stdio buffer is not a `FILE` member. `fopen` allocated 472 bytes and
+  the first read a separate 4096-byte block (Valgrind `--trace-malloc`); the
+  `_IO_*` members point into that one block. `char mine[9] = {0}` changed no
+  `FILE` member (gdb dumps before and after the line).
+- `fread` takes a destination, an item size, an item count, and a stream,
+  not a range.
+- `strlen` measures bytes already in memory up to `\0`; it cannot size a
+  line that has not been read.
+- `malloc(sizeof(*copy * 9))` allocated 4 bytes (Valgrind: invalid write,
+  4 bytes definitely lost).
+- Storage calling a function in `main.c` would reverse the call direction;
+  `main` calls storage.
+- `typedef struct Rec Rec;` in `storage.h` declared a type other than
+  `struct _Record` (`conflicting types for 'Rec'`).
+- `char *buf` pointed nowhere and `sizeof(buf)` gave the pointer size; it
+  became `char buf[1024]`.
+- `atoi` accepts `30abc`; `minutes_parse` is the contract check.
+- Review found four defects, all fixed: a bad value returned the I/O code
+  without a line; an empty file reported line 0; the header was not
+  compared; a read error (`ferror`) ended as success.
+
+**Evidence:**
+
+- `projects/study-cli/storage.c`, `storage.h`, `main.c`, and `Makefile` at
+  the commit that adds this entry. The strict Makefile build exits 0.
+- `sc vg list`: the normal file, a last line without `\n`, subjects with
+  spaces and Korean, and 25 records print in order with exit 0. An empty
+  file and a `garbage` header report line 1, `OS\tabc` line 3, `DB\t0`
+  line 4, a blank line 3, and a CRLF line 2, all with exit 1. A directory
+  and a missing path print `cannot read file` with exit 1. No path exits 2.
+  Valgrind reported nothing on any run.
+- `nm -u storage.o record.o` shows no gate-6 name. `LOGIC_OBJS` is not in
+  the Makefile yet.
+- Not exercised: ASan/UBSan and allocation failure inside `file_read`. A
+  valid line with a 1020-byte subject is rejected and reported one line
+  late, because the leftover `\n` is read as a line.
+
+**Next check:** print `No entries.` for a header-only file through a core
+query (`argc == 2` no longer means empty); `total PATH` through
+`file_read`; `save PATH [SUBJECT MINUTES ...]`, where pairs start at
+`argv[3]`, invalid input leaves the file unchanged, the `FILE *` must reach
+the write step although the traversal callback takes only `name` and
+`minutes`, and a write failure is not reported as success; a policy for
+lines longer than the buffer; `LOGIC_OBJS`, ASan, and the DESIGN.md
+worksheet rows.
