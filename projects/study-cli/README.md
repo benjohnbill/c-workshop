@@ -1,7 +1,7 @@
 ---
-scope: Shared contract for Stages 6–10 and version requirements for Stages 9–10
+scope: Shared contract for Stages 6–11 and the final CLI and data-file contract
 truth: This file defines shared input rules and the final CLI contract; Stage 6–8 briefs define their interim commands
-updated: 2026-09-23
+updated: 2026-09-30
 ---
 
 # Study CLI
@@ -11,11 +11,16 @@ Stage 6부터 이 디렉터리에서 하나의 프로그램을 키웁니다. 구
 
 | Version | Brief |
 | --- | --- |
-| 6 — 메모리 안의 기록 | [Study Records](../../practice/06-dynamic-array/README.md) |
-| 7 — 목록·집계와 module 분리 | [List and Total](../../practice/07-linked-collection/README.md) |
-| 8 — 파일 저장·불러오기 | [Save and Load](../../practice/08-integrated-system/README.md) |
-| 9 — 정식 명령과 안전한 저장 | [Daily CLI](#stage-9--daily-cli) |
-| 10 — 수정·삭제·필터 | [Edit and Filter](#stage-10--edit-and-filter) |
+| 6 — 메모리 안의 기록 | [Study Records](stages/06-study-records.md) |
+| 7 — 목록·집계와 module 분리 | [List and Total](stages/07-list-and-total.md) |
+| 8 — 파일 저장·불러오기 | [Save and Load](stages/08-save-and-load.md) |
+| 9 — 정식 명령과 안전한 저장 | [Daily CLI](stages/09-daily-cli.md) |
+| 10 — 수정·삭제·필터 | [Edit and Filter](stages/10-edit-and-filter.md) |
+| 11 — 조회 전용 TUI | [Terminal Viewer](stages/11-terminal-viewer.md) |
+
+실행 파일은 둘입니다. `study`는 CLI이고 기록을 바꾸는 유일한 프로그램이에요.
+`study-tui`(Stage 11)는 조회 전용이며 기록 관리와 파일 입출력 소스를 `study`와
+공유해요.
 
 ## Shared contract
 
@@ -23,82 +28,10 @@ Stage 6부터 적용합니다.
 
 - Subject는 비어 있을 수 없고, 공백·한국어를 포함한 UTF-8 byte string을 허용합니다. Tab, carriage return, newline은 거부합니다.
 - Minutes는 십진 숫자로만 표현한 `1–1440`의 정수입니다. 부호·소수·숫자 뒤의 다른 문자는 거부합니다.
-- 정상 종료는 exit `0`, I/O·memory·없는 ID 등의 실행 실패는 `1`, 잘못된 command·option·value는 `2`입니다.
+- 정상 종료는 exit `0`, I/O·memory·없는 ID·손상된 데이터 파일 등의 실행 실패는 `1`, 잘못된 command·option·value는 `2`입니다.
 - 결과는 stdout, 오류는 stderr에 영어로 출력합니다. 명시된 결과 문구 외의 꾸밈과 오류 문장은 자유입니다.
 
-아래부터는 Stage 9–10의 계약입니다. Stage 6–8의 임시 명령 형식은 각 brief를 따릅니다.
-
-## Stage 9 — Daily CLI
-
-### 사용 흐름
-
-1. `add`로 과목과 시간을 기록하고, 필요하면 날짜와 메모를 덧붙입니다.
-2. 나중에 `list`와 `total`로 저장된 기록과 합계를 확인합니다.
-3. 기록은 명령을 다시 실행해도 파일에 남으며, 각 기록에는 ID가 붙습니다.
-
-### Try it
-
-```sh
-export STUDY_DATA_FILE="$(mktemp -d)/study.tsv"
-./study help
-./study add --subject C --minutes 30 --date 2026-09-23 --note "pointer review"
-./study add --subject OS --minutes 45 --date 2026-09-23
-./study list
-./study total
-```
-
-새 파일에서는 ID 1과 2의 기록이 보이고 합계는 `Total: 75 minutes`입니다.
-각 명령은 별도 process로 실행됩니다. 환경 변수는 테스트용 경로를 지정합니다.
-
-### Behavior
-
-아래 Commands·Data rules·Query output·Storage에서 Stage 9에 해당하는 계약을
-적용합니다. `edit`, `remove`, 조회 필터는 Stage 10 범위입니다. Stage 8의
-실험 파일은 변환하지 않으며, 새 v1 파일로 시작합니다.
-
-### Done when
-
-- 새 경로에서 추가한 기록을 다른 process의 `list`·`total`로 확인합니다.
-- 옵션 순서를 바꾸고 날짜·메모를 생략해도 계약대로 동작합니다.
-- 잘못된 옵션·날짜·시간, 손상된 파일을 거부하고 기존 파일을 유지합니다.
-- 저장 실패 시 기존 파일과 `next_id`가 유지되고 성공으로 보고되지 않습니다.
-- 정상·실패 경로의 파일과 메모리를 정리하고 [공통 완료 조건](../../CURRICULUM.md#shared-completion-gates)을 통과합니다.
-
-## Stage 10 — Edit and Filter
-
-### 사용 흐름
-
-1. 저장된 기록을 ID로 수정하거나 삭제합니다.
-2. 날짜나 과목을 지정해 목록과 합계에서 원하는 기록을 찾아봅니다.
-
-### Try it
-
-앞 예시의 테스트 파일에 이어서 실행합니다.
-
-```sh
-./study edit 1 --minutes 40
-./study list --subject C
-./study total --date 2026-09-23 --subject C
-./study remove 2
-./study add --subject 자료구조 --minutes 20 --date 2026-09-23
-./study list
-```
-
-필터 합계는 `Total: 40 minutes`이고 마지막 목록에는 ID 1과 3이 남습니다.
-
-### Behavior
-
-아래 계약 전체를 적용합니다. 일부 field만 수정하면 나머지는 유지합니다.
-없는 ID나 실패한 저장 때문에 다른 기록이 바뀌면 안 됩니다.
-
-### Done when
-
-- 빈 목록, 일부 field 수정, 없는 ID, 두 필터의 조합을 확인합니다.
-- 최대 ID를 지운 뒤와 모든 기록을 지운 뒤, 재실행·추가해도 ID를 재사용하지 않습니다.
-- 손상된 파일과 저장 실패에서 원본을 유지합니다.
-- 단위 테스트로 배열 확장, deep copy, 수정·삭제, TSV round trip을 검증합니다.
-- Shell 통합 테스트는 임시 `STUDY_DATA_FILE`을 사용하며 실제 `$HOME/.study.tsv`를 건드리지 않습니다.
-- Sanitizer·Valgrind와 [공통 완료 조건](../../CURRICULUM.md#shared-completion-gates)을 통과합니다.
+아래는 Stage 9–10 CLI의 계약이며, Stage 11의 `study-tui`도 같은 데이터 파일을 읽어요. Stage 6–8의 임시 명령 형식은 각 brief를 따릅니다.
 
 ## Commands
 
@@ -156,5 +89,5 @@ Stage 10에서 나머지를 추가합니다. 옵션 순서는 자유이며, 알 
   metadata row는 유지해요.
 - 변경 명령은 전체 파일을 읽고 검증한 뒤 임시 파일에 완전히 기록하고
   `rename()`으로 교체해요.
-- 손상된 행을 만나면 행 번호를 포함한 오류를 출력하고 원본을 변경하지 않아요.
+- 손상된 행을 만나면 행 번호를 포함한 오류를 출력하고 exit `1`로 종료하며 원본을 변경하지 않아요.
 - 여러 process의 동시 수정과 file locking은 v1 범위 밖이에요.

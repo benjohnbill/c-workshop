@@ -1,6 +1,6 @@
 ---
-scope: Twelve-stage C Workshop curriculum
-truth: This file defines stage focus, status, and shared completion gates; each stage README defines behavior
+scope: Stage 1–5 drills and the Stage 6–11 study program: focus, status, shared completion gates
+truth: This file defines stage focus, status, and shared completion gates; each stage brief defines behavior
 updated: 2026-09-30
 ---
 
@@ -9,15 +9,18 @@ updated: 2026-09-30
 단계 번호는 같은 간격의 난이도 점수가 아니에요. 뒤로 갈수록 새 문법보다
 여러 상태와 소유권을 한 프로그램 안에서 동시에 유지하는 부담이 커져요.
 
-Stage 1–5에서 익힌 구조체·함수 포인터·소유권을 Stage 6–10의 하나의 `study`
-프로그램에서 반복해서 사용합니다. 각 버전을 터미널에서 검증하고 같은 코드를
-확장합니다. 개념 설명은 필요할 때 다루며, brief는 기능과 완료 조건을 정의합니다.
+Stage 1–5에서 익힌 구조체·함수 포인터·소유권을 Stage 6–11의 하나의 `study`
+프로그램에서 반복해서 사용합니다. Stage 6–11은 프로그램이 할 수 있는 일이
+늘어나는 확인 지점이고, 최종 모습은 기록을 CLI로 남기고 TUI로 조회하는 하나의
+프로그램이에요. 각 버전을 터미널에서 검증하고 같은 코드를 확장합니다. 개념
+설명은 필요할 때 다루며, brief는 기능과 완료 조건을 정의합니다.
 
 ## Milestones
 
 - **Minimum:** Stage 8에서 기록을 저장하고 다른 실행에서 읽으며 객체 수명을 설명해요.
-- **Target:** Stage 10의 `study` CLI를 실제 터미널에서 지속해서 사용해요.
-- **Extra:** Stage 11–12로 malloc-lab과 PintOS의 핵심 표현을 미리 경험해요.
+- **Usable:** Stage 10의 `study` CLI를 실제 터미널에서 지속해서 사용해요.
+- **Target:** Stage 11의 `study-tui`로 같은 기록을 조회해요. 프로젝트는 여기서 끝나요.
+- **Deferred extension:** allocator·scheduler 모형(malloc-lab, PintOS 대비)은 Target 이후에 정해요.
 
 ## Stages
 
@@ -28,18 +31,21 @@ Stage 1–5에서 익힌 구조체·함수 포인터·소유권을 Stage 6–10�
 | 3 | Passed | 구조체 주소, `->`, 호출자의 원본 변경 | [Struct pointers](practice/03-struct-pointers/README.md) |
 | 4 | Deferred | callback에 `self` 전달 | [Self callbacks](practice/04-self-callbacks/README.md) |
 | 5 | Deferred | heap 객체, deep copy, 생성과 파괴 | [Owned objects](practice/05-owned-objects/README.md) |
-| 6 | Passed | 인자로 기록 입력, 구조체·deep copy·동적 배열 | [Study Records](practice/06-dynamic-array/README.md) |
-| 7 | Passed | list·total, module 분리, 함수 포인터로 처리 동작 전달 | [List and Total](practice/07-linked-collection/README.md) |
-| 8 | Next | TSV 저장·불러오기, 읽기 버퍼와 기록의 수명, 실패 경로 정리 | [Save and Load](practice/08-integrated-system/README.md) |
-| 9 | Not started | 정식 명령·옵션 검증, ID·날짜·메모, 안전한 저장 | [Daily CLI](projects/study-cli/README.md#stage-9--daily-cli) |
-| 10 | Not started | 수정·삭제·필터, 오류 복구, 통합 테스트와 실사용 | [Edit and Filter](projects/study-cli/README.md#stage-10--edit-and-filter) |
-| 11 | Not started | alignment, block metadata, split/coalesce | [Allocator model](bridges/11-allocator-model/README.md) |
-| 12 | Not started | intrusive list, priority, state, callback | [Scheduler model](bridges/12-scheduler-model/README.md) |
+| 6 | Passed | 인자로 기록 입력, 구조체·deep copy·동적 배열 | [Study Records](projects/study-cli/stages/06-study-records.md) |
+| 7 | Passed | list·total, module 분리, 함수 포인터로 처리 동작 전달 | [List and Total](projects/study-cli/stages/07-list-and-total.md) |
+| 8 | Next | TSV 저장·불러오기, 읽기 버퍼와 기록의 수명, 실패 경로 정리 | [Save and Load](projects/study-cli/stages/08-save-and-load.md) |
+| 9 | Not started | 정식 명령·옵션 검증, ID·날짜·메모, 안전한 저장 | [Daily CLI](projects/study-cli/stages/09-daily-cli.md) |
+| 10 | Not started | 수정·삭제·필터, 오류 복구, 통합 테스트와 실사용 | [Edit and Filter](projects/study-cli/stages/10-edit-and-filter.md) |
+| 11 | Not started | 조회 전용 TUI: 상태→프레임 분리, 터미널 복원, 한글 표시 폭 | [Terminal Viewer](projects/study-cli/stages/11-terminal-viewer.md) |
 
-Stage 6–10의 구현 위치는 `projects/study-cli/`입니다. 기존 학습자 파일을
-보존하기 위해 Stage 6–8 brief의 경로는 유지합니다. 연결 리스트와 배송 센터는
-CLI 필수 경로에서 제외합니다. Stage 12에 진입할 때 필요한 연결 리스트 기초를
-확인하고 보충하며, Stage 11–12는 선택 확장입니다.
+Stage 6–11의 구현 위치는 `projects/study-cli/`입니다. 연결 리스트와 배송 센터는
+CLI 필수 경로에서 제외해요. 아래 확장은 Target 이후에 정하며, 진입할 때 필요한
+연결 리스트 기초를 확인하고 보충해요.
+
+| Extension | Status | Focus | Brief |
+| --- | --- | --- | --- |
+| Allocator model | Deferred | alignment, block metadata, split/coalesce | [Allocator model](bridges/allocator-model/README.md) |
+| Scheduler model | Deferred | intrusive list, priority, state, callback | [Scheduler model](bridges/scheduler-model/README.md) |
 
 ## Review exercises
 
@@ -56,6 +62,16 @@ CLI 필수 경로에서 제외합니다. Stage 12에 진입할 때 필요한 연
 3. 이번 단계의 핵심 pointer·state·ownership 관계를 말로 설명할 수 있어요.
 4. 작은 입력 또는 요구 변형을 정답 코드 없이 처리할 수 있어요.
 5. 도움 수준과 검증 evidence가 `LEARNING_LOG.md`에 기록돼요.
+6. Stage 8부터 record·file 로직을 담은 object file에는 실행 중단이나 출력 호출이
+   없어요. Makefile의 한 변수(`LOGIC_OBJS`)에 그 object들을 적고, 목록의 모든
+   object에 `nm -u`를 적용했을 때 `exit`, `_exit`, `_Exit`, `abort`, `printf`,
+   `__printf_chk`, `vprintf`, `puts`, `putchar`, `perror`, `err`, `errx`, `warn`,
+   `warnx`, `stdout`, `stderr`, `__assert_fail`이 나오지 않아야 해요. 목록에 없는
+   object는 interface object(`main`을 정의하는 것, 인자 해석, 결과·help 출력,
+   terminal 그리기)여야 하고, 통과 항목의 Evidence에 그 이름을 적어요. Stage 11부터
+   `LOGIC_OBJS`는 `study`와 `study-tui`가 함께 링크하는 object 전부예요. 실패는
+   호출한 쪽에 돌려주고, message와 exit status는 그쪽이 정해요. 자신이 연
+   `FILE *`이나 caller가 넘긴 `FILE *`에 쓰는 것은 허용해요.
 
 새 기능의 필요성을 느끼면 다음 brief를 살펴볼 수 있습니다. 기능을 미리
 구현한 경우에도 단계 통과는 해당 조건의 검증 근거로 판단합니다.
@@ -85,9 +101,10 @@ c dbg FILE.c
 
 프로그램 인자는 파일명 뒤에 붙입니다. 예: `c main.c C 30 OS 45`.
 
-개인 `c` wrapper는 C17과 엄격한 warning, `-g3 -O0`으로 컴파일해요. Stage 7에
-진입할 때 multi-file build가 필요하므로 wrapper 확장은 그 시점의 별도 작업으로
-판단해요. 그 전에는 wrapper를 바꾸지 않아요.
+Stage 7부터 `study`는 `projects/study-cli/`의 Makefile로 build하고, `sc`가 build 후
+실행해요(`sc ARGS`, `sc dbg ARGS`, `sc vg ARGS`). 개인 `c` wrapper는 C17과 엄격한
+warning, `-g3 -O0`으로 컴파일하는 단일 파일 전용으로 유지해요. `study-tui`를 실행하는
+방법은 Stage 11에 진입할 때 정해요.
 
 ## Debugging policy
 

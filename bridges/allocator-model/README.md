@@ -1,10 +1,10 @@
 ---
-scope: Stage 11 allocator-model behavior specification
+scope: Deferred extension: allocator-model behavior specification
 truth: This is a bounded learning model, not a replacement for libc malloc
 updated: 2026-09-22
 ---
 
-# Stage 11 — Arena Allocator Model
+# Extension — Arena Allocator Model
 
 ## Scenario
 

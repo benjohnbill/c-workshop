@@ -1,10 +1,10 @@
 ---
-scope: Stage 12 scheduler-model behavior specification
+scope: Deferred extension: scheduler-model behavior specification
 truth: This is a cooperative state model, not an operating-system thread scheduler
 updated: 2026-09-22
 ---
 
-# Stage 12 — Cooperative Scheduler Model
+# Extension — Cooperative Scheduler Model
 
 ## Scenario
 

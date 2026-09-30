@@ -36,6 +36,6 @@ c review-03-05/extra_practice.c
 - 정상 실행 경로의 workshop warning policy, sanitizer, Valgrind 검사를 통과합니다.
 
 이 checkpoint의 통과 범위는 소유 문자열의 독립성과 정상 경로 정리입니다.
-할당 실패 복구는 [Stage 6](../06-dynamic-array/README.md), 문자열 교체는
-[Stage 10](../../projects/study-cli/README.md#stage-10--edit-and-filter)에서 확인합니다.
+할당 실패 복구는 [Stage 6](../../projects/study-cli/stages/06-study-records.md), 문자열 교체는
+[Stage 10](../../projects/study-cli/stages/10-edit-and-filter.md)에서 확인합니다.
 타이머 callback은 [Stage 4](../04-self-callbacks/README.md)의 별도 과제입니다.

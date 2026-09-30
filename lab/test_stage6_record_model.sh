@@ -8,7 +8,7 @@ set -uo pipefail
 bin=${1:+$(realpath "$1")}
 cd "$(dirname "$0")/.."
 
-src=practice/06-dynamic-array/practice6.c
+src=lab/stage6/archived_practice6.c
 fails=0
 
 run() {

@@ -13,6 +13,13 @@ Use `Outcome`, `Assistance`, `Demonstrated`, `Corrected`, `Evidence`, and
 `Next check`. Earlier entries remain unchanged; a later entry supersedes a
 mistaken assessment explicitly.
 
+From 2026-09-30 an entry lands in the same commit as the state it describes.
+The `study` program changes in place from stage to stage, so read an entry's
+paths at the commit that added it: `git log --reverse -S'<entry heading>' --
+LEARNING_LOG.md` finds it. For an earlier entry, that commit shows where the
+paths were, not always the state the entry describes. A path in an old entry
+may not exist at HEAD after later moves.
+
 ## 2026-09-22 — Stage 1: Function pointers
 
 **Outcome:** passed; `fp_practice1.c` retains a separate unfinished struct case
