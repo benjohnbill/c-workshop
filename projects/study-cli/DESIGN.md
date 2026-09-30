@@ -108,3 +108,46 @@ grilling으로 정하고 기초 세팅에 적용한 결정. `practice6.c`를 int
 | Q4 | minutes·subject 검사는 core의 함수 | 유효한 기록의 정의. add 입력, edit 입력, 파일 읽기가 모두 호출한다 |
 | Q5 | 함수마다 실패는 한 종류 | 검사 실패는 exit 2, `NULL`은 메모리 부족이라 exit 1. interface가 매핑한다 |
 | Q6 | 연속 subject 경고는 interface가 argv만으로 판단 | 입력 습관에 대한 확인이지 기록의 규칙이 아니다. 파일에서는 경고할 이유가 없다 |
+
+### Stage 7 진행 (2026-09-30)
+
+코드에 들어간 것:
+
+- 구조체 정의가 `record.c`로 옮겨졌다. `record.h`에는 `typedef struct _Record Rec;`처럼 이름만 남았다.
+- 순회 한 곳: `record.c`의 `print_result(const Rec *r, result func)`. `result`는 `record.h`의 함수 포인터 typedef이고, main의 `print_input`이 기록마다 불리는 callback이다.
+- 아직 남은 것: `list`/`total` 명령 자리 해석, total 합계를 누적할 값의 위치와 소유자.
+
+Q1은 결정과 반대 순서로 적용됐다. 결정은 "순회가 대체한 뒤 정의를 옮긴다"였지만 정의를 먼저 옮겼고, 그 사이의 커밋 `af23ba0`은 `invalid use of incomplete typedef 'Rec'`로 빌드되지 않았다. 이 에러는 경계가 실제로 막혔다는 증거이기도 하다.
+
+도구:
+
+- `lab/split6`의 세 파일을 `archived_*`로 바꿨다. 같은 이름의 `record.h`가 두 곳에 있어서, lab 쪽에 쓴 선언을 study-cli가 읽는다고 착각했다.
+- `~/.local/bin/sc`: `make -s` 뒤에 실행한다. `sc ARGS`, `sc dbg ARGS`, `sc vg ARGS`.
+
+#### 정리본 계획 (2026-09-30 grilling)
+
+`study-design.html`(블로그 사본 포함)에 Stage 7을 반영하는 방법.
+
+| # | 결정 |
+| --- | --- |
+| 게시 시점 | Stage 7을 마칠 때. 그 전까지는 이 파일과 `sources/`에 쌓는다 |
+| 3부 | "Stage 7 진입 결정"은 진입 시점의 기록으로 고정한다. Stage 7은 새 4부로 추가한다 |
+| 인용 | 내 문장은 오타까지 그대로. AI의 답은 Antithese의 증거로 요약하고, AI가 쓴 코드는 싣지 않는다 |
+| 출처 | 장마다 "Gemini 대화" 또는 "Claude 세션"을 표기한다. 원문은 `sources/`에 둔다 |
+| 흐름 | `DESIGN.md` → `study-design.html` → 블로그 사본. push는 내가 확인한 뒤에 |
+
+4부의 장 후보 (2부와 같은 These / Antithese / Synthese 형식):
+
+| 장 | These (그때 쓴 문장) | 원문 |
+| --- | --- | --- |
+| 1. 구조체를 숨기는 문법 | "typedef라는 말 없이 struct 뒤에 본명, 그리고 이름 일치시켜주는 느낌으로?" | Gemini Q0–Q3 |
+| 2. `record.c`를 include해야 하나 | "그래야 Rec의 정의가 완벽해지니까?", "주소가 0000으로 꽉차있을 것 같은데" | Gemini Q4, Q8–Q10 |
+| 3. 두 값을 return해야 하나 | "return이 두 개일 수는 없잖아", "그 함수가 알아서 가공된 name하고 minutes로 바꿔줌" | Gemini Q5–Q7, Q11–Q18 |
+| 4. 함수 포인터 typedef 문법 | "*result가 하나의 타입인건가?" | Gemini Q19–Q26 |
+| 5. 선언했는데 undeclared, 그다음 link 에러 | "print_result가 19라인에 있잖아." | Gemini Q27, Claude 세션 |
+
+2장과 5장은 이어진다. 2장에서 예측한 link 실패가 5장에서 실제로 일어났다. Q1 순서 역전은 3부 Q1 행에 주석 한 줄로 단다.
+
+열린 질문에 추가할 것: 채워넣기(output parameter) 방식의 확장. 다른 agent와 따로 다루려고 handoff를 만들어 두었다 (Gemini Q16).
+
+Stage 7을 마칠 때 정할 것: 4부 제목, 4부의 "지금의 코드" 스냅숏, 머리말의 날짜·stage 줄, index 카드 문구.

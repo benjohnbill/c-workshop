@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "record.h"
+#include "archived_record.h"
 
 int main(int argc, char *argv[]){
     int status = 0;

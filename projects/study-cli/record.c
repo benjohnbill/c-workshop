@@ -72,9 +72,28 @@ int minutes_parse(const char *text, int *out){
         if (text[j] < '0' || text[j] > '9'){ return 0; } // Integer check.
         tmp = (10 * tmp) + (text[j] - '0');
         if (tmp > MINUTES_MAX){ return 0; }
-    } // Check per digit, so tmp never overflows.
+    } // Check in iteration, so tmp never overflows.
 
     if (tmp < MINUTES_MIN){ return 0; }
     *out = tmp;
     return 1; // Normal Case. If error, all return 0.
+}
+
+void print_result(const Rec *r, result func){
+    for (size_t i = 0; i < r->count; i++){
+        func(r->list[i]->name, r->list[i]->minutes);
+    }
+}
+
+void Read_list(const Rec *r, result func){
+    for (size_t i = 0; i < r->count; i++){
+        func(r->list[i]->name, r->list[i]->minutes);
+    }
+}
+
+void Read_total(const Rec *r, Minutes func){
+    int total = 0;
+    for (size_t i = 0; i < r->count; i++){
+        total += r->list[i]->minutes;
+    } func(total);
 }

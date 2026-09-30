@@ -1,7 +1,7 @@
 ---
 scope: Twelve-stage C Workshop curriculum
 truth: This file defines stage focus, status, and shared completion gates; each stage README defines behavior
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # Curriculum
@@ -29,8 +29,8 @@ Stage 1–5에서 익힌 구조체·함수 포인터·소유권을 Stage 6–10�
 | 4 | Deferred | callback에 `self` 전달 | [Self callbacks](practice/04-self-callbacks/README.md) |
 | 5 | Deferred | heap 객체, deep copy, 생성과 파괴 | [Owned objects](practice/05-owned-objects/README.md) |
 | 6 | Passed | 인자로 기록 입력, 구조체·deep copy·동적 배열 | [Study Records](practice/06-dynamic-array/README.md) |
-| 7 | Next | list·total, module 분리, 함수 포인터로 처리 동작 전달 | [List and Total](practice/07-linked-collection/README.md) |
-| 8 | Not started | TSV 저장·불러오기, 읽기 버퍼와 기록의 수명, 실패 경로 정리 | [Save and Load](practice/08-integrated-system/README.md) |
+| 7 | Passed | list·total, module 분리, 함수 포인터로 처리 동작 전달 | [List and Total](practice/07-linked-collection/README.md) |
+| 8 | Next | TSV 저장·불러오기, 읽기 버퍼와 기록의 수명, 실패 경로 정리 | [Save and Load](practice/08-integrated-system/README.md) |
 | 9 | Not started | 정식 명령·옵션 검증, ID·날짜·메모, 안전한 저장 | [Daily CLI](projects/study-cli/README.md#stage-9--daily-cli) |
 | 10 | Not started | 수정·삭제·필터, 오류 복구, 통합 테스트와 실사용 | [Edit and Filter](projects/study-cli/README.md#stage-10--edit-and-filter) |
 | 11 | Not started | alignment, block metadata, split/coalesce | [Allocator model](bridges/11-allocator-model/README.md) |

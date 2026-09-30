@@ -20,4 +20,16 @@ void record_free(Rec *r);
 int valid_subject(const char *name);
 int minutes_parse(const char *text, int *out);
 
+typedef void (*result)(const char *name, int minutes);
+void print_result(const Rec *r, result func);
+// To print inputs in main.c
+
+typedef void (*Minutes)(int minutes);
+void Read_total(const Rec *r, Minutes func);
+// To print total minutes in main.c
+
+typedef void (*Subjects)(const char *name);
+void Read_list(const Rec *r, result func);
+// To print list in main.c
+
 #endif

@@ -2,7 +2,7 @@
 scope: Evidence of demonstrated C understanding in this repository
 role: Append-only context for future tutoring, rechecks, and retrospectives
 truth: Code, Git history, and verification output are primary evidence; this log points to them
-updated: 2026-09-29
+updated: 2026-09-30
 limits: This is not a transcript, diary, score, or substitute for re-verification
 ---
 
@@ -275,3 +275,82 @@ contract, and a learner-solved variation.
 **Next check:** Stage 7 — decide multi-file build support for the `c`
 wrapper first, then split the record module and add `list`/`total`.
 `lab/test_stage6_record_model.sh` still expects the old hard-coded records.
+
+## 2026-09-30 — Stage 7: List and Total
+
+**Outcome:** passed under a learner-approved narrowed scope. `study list` and
+`study total` read `SUBJECT MINUTES ...` pairs into one `Rec` per run and print
+the records or their sum. `main.c` (interface) and `record.c` (core) are
+separate modules. Two brief items are carried to Stage 10 and were not verified
+here: one shared traversal that takes the per-record function (`Read_list`,
+`Read_total`, and an unused `print_result` are still three loops, and
+`Read_total` calls its function once with the finished sum), and the small
+in-process check that lists and totals the same `Rec`.
+
+**Assistance:** concrete-hint. One item was a direct-fix: at the learner's
+request the tutor supplied the two-line change that moves `No entries.` from
+`argc_check` into the `list` branch.
+
+**Demonstrated:**
+
+- Split `practice6.c` into `main.c` (argv, output, exit codes) and `record.c`
+  (`Rec`, its array, validation). The compiler error `invalid use of incomplete
+  typedef 'Rec'` (commit `af23ba0`) showed the hidden definition was enforced;
+  a traversal function in `record.c` then replaced the field access in `main.c`.
+- Derived the argument count with a command word: `argc` is `2n + 2` for `n`
+  pairs. Argued that `study foo 30` cannot be told from a subject while the
+  command may be absent, so the command word became mandatory and the
+  no-command path was removed.
+- Explained two ownership layers: `main` decides when the `Rec` handle is
+  created and freed (one `new_record`, one `record_free` on every path), and
+  only `record.c` knows how to allocate and free the array, each `Sub`, and each
+  name copy. `argv` strings belong to neither, because `Sub_add` copies names.
+- Stated that the `name` a callback receives points into memory owned by `Rec`
+  and stays valid until `record_free`.
+- Moved the running sum from a file-scope `total` to a local in `Read_total`
+  after review showed that a second call in one process would print 150
+  instead of 75.
+- Variation (`longest`, no code supplied): keep the current maximum as a local
+  in the traversal, call the passed function once with the result, and return
+  `NULL` for an empty record set so `main` can tell.
+
+**Corrected:**
+
+- `argv[1] == "total"` compared addresses, so no branch ran; `strcmp` compares
+  contents (`-Waddress`).
+- A label is visible only inside its own function. The helper returns the exit
+  code and `main` jumps to `cleanup`; a `status` passed by value would not have
+  reached `main`.
+- Two Stage 6 rules survived the move: `argc % 2 == 0` rejected every valid
+  command, and `strcmp(argv[i - 1], argv[i - 3])` read `argv[0]` or `argv[-1]`
+  on the first pair (segfault on `./study C 30`) until guarded by `i > 3`.
+- One function mixed validation with the empty-list message: `total` printed
+  both `No entries.` and `Total: 0 minutes`, and its `exit` skipped
+  `record_free` (Valgrind: still reachable, 104 bytes in 2 blocks). Returning a
+  status and printing `No entries.` in the `list` branch fixed both.
+- A missing or unknown command first exited 0 with a stdout message; it now
+  writes to stderr and exits 2. A non-void function fell off its end
+  (`-Wreturn-type`).
+- An empty result is a normal outcome; it must not share the channel that
+  carries the error exit codes 1 and 2 (raised in review).
+
+**Evidence:**
+
+- Strict build with the Makefile flags (`-Werror -Wconversion -Wshadow` and the
+  rest) produced no diagnostics on 2026-09-30.
+- Runs: `list C 30 OS 45` printed both records in input order; `total C 30 OS 45`
+  printed `Total: 75 minutes` and `total C 60 OS 45` printed 105; `list` printed
+  `No entries.` and `total` printed `Total: 0 minutes`; `list C 30 OS`,
+  `list C abc`, `list C 1441`, an unknown command, and no command exited 2 with
+  output on stderr only.
+- Valgrind reported "All heap blocks were freed" and 0 errors on `list`,
+  `total`, `list C 30 OS 45`, `total C 30`, `foo 30`, `list C 30 OS`, and
+  `list C abc`. An ASan/UBSan build ran the main cases without reports.
+- Not exercised: allocation-failure injection (`lab/failinject/run.sh`) and
+  growth past 10 records through `list` and `total`.
+
+**Next check:** Stage 8 — with `list PATH`, `argc == 2` no longer means an empty
+list, so the core must report whether it holds records; the `FILE *` module
+must keep earlier records intact when the read buffer is reused. Carried from
+this stage: one traversal for `list` and `total` before the Stage 10 filters,
+and the in-process check that lists and totals one `Rec`.
