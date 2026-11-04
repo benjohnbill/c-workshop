@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C에서 객체지향 프로그래밍하기</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2312201F'/%3E%3Ctext x='16' y='23' font-size='19' font-family='monospace' font-weight='700' text-anchor='middle' fill='%234FC5B3'%3EJ%3C/text%3E%3C/svg%3E">
+<meta name="description" content="불완전 타입으로 구조체 몸체를 숨기고 함수 포인터로 출력을 넘겨 모듈이 서로를 모르게 만든 과정을 따라간 2분 발표 슬라이드입니다.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="C에서 객체지향 프로그래밍하기">
+<meta property="og:description" content="불완전 타입으로 구조체 몸체를 숨기고 함수 포인터로 출력을 넘겨 모듈이 서로를 모르게 만든 과정을 따라간 2분 발표 슬라이드입니다.">
+<meta property="og:url" content="https://benjohnbill.github.io/study/week05/oop-in-c.html">
+
+<!-- 폰트: IBM Plex Sans KR(본문·제목) · IBM Plex Mono(코드). week04 덱과 같은 디자인 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ===========================================
+   1. 테마 변수 — 색과 크기는 전부 여기서 바꾼다
+   스타일: Swiss Modern (흰 바탕 · 격자 · 단일 빨강 악센트), week04 덱 재사용
+   =========================================== */
+:root {
+    --paper:  #ffffff;   /* 바탕 */
+    --ink:    #0a0a0a;   /* 본문 글자 */
+    --red:    #ff3300;   /* 유일한 악센트. 한 화면에 한두 군데만 */
+    --grid:   #ebebeb;   /* 배경 격자선 */
+    --mut:    #6b6b6b;   /* 보조 글자 */
+    --panel:  #f7f7f5;   /* 코드 패널 바탕 */
+    --panel-b:#0a0a0a;   /* 코드 패널 테두리 */
+
+    --font-body:    'IBM Plex Sans KR', sans-serif;
+    --font-mono:    'IBM Plex Mono', monospace;
+
+    /* 타이포 — 전부 clamp. 대형 모니터와 노트북 모두에서 깨지지 않는다 */
+    --title-size:    clamp(2.4rem, 4.8vw, 7.5rem);
+    --h2-size:       clamp(1.4rem, 2.3vw, 3.2rem);
+    --h3-size:       clamp(1.1rem, 1.6vw, 2.2rem);
+    --body-size:     clamp(0.95rem, 1.15vw, 1.65rem);
+    --small-size:    clamp(0.72rem, 0.78vw, 1.15rem);
+    --code-size:     clamp(0.85rem, min(1.4vw, 2.4vh), 2.1rem);
+
+    --slide-padding: clamp(1rem, 4vw, 4rem);
+    --content-gap:   clamp(0.5rem, 2vw, 2rem);
+    --element-gap:   clamp(0.25rem, 1vw, 1rem);
+
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --dur:  0.65s;
+}
+
+/* ===========================================
+   2. 기본 초기화
+   =========================================== */
+* { margin:0; padding:0; box-sizing:border-box; }
+
+/* ===========================================
+   3. VIEWPORT FITTING — 필수 기본 스타일
+   (viewport-base.css 전문. 슬라이드가 화면을 넘지 않게 하는 계약)
+   =========================================== */
+html, body {
+    height: 100%;
+    overflow-x: hidden;
+}
+html {
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+}
+.slide {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;            /* 중요: 어떤 경우에도 넘치지 않는다 */
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+.slide-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-height: 100%;
+    overflow: hidden;
+    /* 세로 여백을 줄여서 그만큼을 코드 크기로 돌린다 */
+    padding: clamp(.5rem, 1.4vh, 1.1rem) var(--slide-padding);
+}
+.card, .container, .content-box {
+    max-width: min(90vw, 1000px);
+    max-height: min(80vh, 700px);
+}
+.feature-list, .bullet-list { gap: clamp(0.4rem, 1vh, 1rem); }
+.feature-list li, .bullet-list li { font-size: var(--body-size); line-height: 1.4; }
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+    gap: clamp(0.5rem, 1.5vw, 1rem);
+}
+img, .image-container {
+    max-width: 100%;
+    max-height: min(50vh, 400px);
+    object-fit: contain;
+}
+
+/* 낮은 화면 (700px 미만) */
+@media (max-height: 700px) {
+    :root {
+        --slide-padding: clamp(0.75rem, 3vw, 2rem);
+        --content-gap:   clamp(0.4rem, 1.5vw, 1rem);
+        --title-size:    clamp(1.25rem, 4.5vw, 2.5rem);
+        --h2-size:       clamp(1rem, 3vw, 1.75rem);
+    }
+}
+/* 아주 낮은 화면 (600px 미만) */
+@media (max-height: 600px) {
+    :root {
+        --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem);
+        --content-gap:   clamp(0.3rem, 1vw, 0.75rem);
+        --title-size:    clamp(1.1rem, 4vw, 2rem);
+        --body-size:     clamp(0.7rem, 1.2vw, 0.95rem);
+    }
+    .nav-dots, .keyboard-hint, .decorative { display: none; }
+}
+/* 극단적으로 낮은 화면 (500px 미만) */
+@media (max-height: 500px) {
+    :root {
+        --slide-padding: clamp(0.4rem, 2vw, 1rem);
+        --title-size:    clamp(1rem, 3.5vw, 1.5rem);
+        --h2-size:       clamp(0.9rem, 2.5vw, 1.25rem);
+        --body-size:     clamp(0.65rem, 1vw, 0.85rem);
+    }
+}
+/* 좁은 화면 (600px 미만) */
+@media (max-width: 600px) {
+    :root { --title-size: clamp(1.25rem, 7vw, 2.5rem); }
+    .grid { grid-template-columns: 1fr; }
+}
+/* 모션 축소 선호 존중 */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.2s !important;
+    }
+    html { scroll-behavior: auto; }
+}
+
+/* ===========================================
+   4. 슬라이드 뼈대 — 스위스 격자
+   위 머리띠 / 가운데 본문 / 아래 발띠 의 3단 구조
+   =========================================== */
+body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-weight: 400;
+}
+
+/* 배경 12열 격자 — 스위스 스타일의 서명 요소 */
+.slide::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px 8.3333%);
+    opacity: .6;
+    z-index: 0;
+}
+
+.slide-content { gap: var(--content-gap); }
+
+/* 각 장의 핵심 문장 */
+h2.thesis {
+    font-size: var(--h3-size);
+    font-weight: 700;
+    letter-spacing: -.01em;
+    margin-bottom: clamp(.1rem, .4vh, .4rem);
+}
+h2.thesis b { color: var(--red); font-weight: 700; }
+h2.thesis code { font-family: var(--font-mono); font-weight: 600; letter-spacing: 0; }
+
+/* 머리띠: 왼쪽 구역 이름, 오른쪽 번호 */
+.head {
+    position: relative; z-index: 2;
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 2px solid var(--ink);
+    padding: 0 var(--slide-padding) clamp(.4rem, 1vh, .7rem);
+    margin: 0 0 0;
+}
+/* 머리띠에 Rec · main.c 같은 식별자가 들어간다. 대문자로 바꾸면 다른 이름이 된다 */
+.head .label {
+    font-family: var(--font-mono);
+    font-size: var(--small-size);
+    letter-spacing: .02em;
+    color: var(--mut);
+}
+/* 슬라이드 번호는 장식이 아니라 셈이다. 머리띠 오른쪽에 작게 한 번만 둔다 */
+.head .num {
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: var(--small-size);
+    letter-spacing: .1em;
+    color: var(--mut);
+    line-height: 1;
+}
+.head-space { padding-top: clamp(1.1rem, 3.5vh, 2.6rem); }
+
+/* 발띠 */
+.foot {
+    position: relative; z-index: 2;
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid var(--ink);
+    margin: 0 var(--slide-padding) clamp(1rem, 3vh, 2.2rem);
+    padding-top: clamp(.35rem, 1vh, .6rem);
+    font-family: var(--font-mono);
+    font-size: var(--small-size);
+    color: var(--mut);
+}
+
+/* 한국어는 어절 단위로 끊어야 읽힌다. 이 규칙이 없으면 아무 데서나 잘린다 */
+h1, h2, .sub, .punch, .takeaway, .foot span, .head .label {
+    word-break: keep-all;
+    text-wrap: pretty;
+}
+h1, h2 { text-wrap: balance; }
+
+/* ===========================================
+   5. 본문 요소
+   =========================================== */
+h1 {
+    font-family: var(--font-body);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -.02em;
+    font-size: var(--title-size);
+    max-width: 19ch;
+    position: relative; z-index: 2;
+}
+h1 em { font-style: normal; color: var(--red); }
+
+h2 {
+    font-family: var(--font-body);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -.015em;
+    font-size: var(--h2-size);
+    position: relative; z-index: 2;
+}
+h2 em { font-style: normal; color: var(--red); }
+
+/* 표지의 태그 줄 */
+.tags { display: flex; gap: clamp(.4rem, .8vw, .8rem); align-self: flex-start; position: relative; z-index: 2; }
+.eyebrow {
+    display: inline-block; align-self: flex-start;
+    font-family: var(--font-mono);
+    font-size: var(--small-size);
+    letter-spacing: .2em; text-transform: uppercase;
+    color: var(--paper); background: var(--red);
+    border: 2px solid var(--red);
+    padding: .35em .75em;
+    position: relative; z-index: 2;
+}
+/* study-cli 는 프로그램 이름이다. 대문자로 바꾸지 않는다 */
+.eyebrow.ghost {
+    text-transform: none; letter-spacing: .04em;
+    color: var(--red); background: var(--paper);
+}
+.rule {
+    width: clamp(70px, 9vw, 180px);
+    height: clamp(6px, .55vw, 12px); background: var(--ink);
+    margin-top: clamp(.3rem, 1vh, .9rem);   /* 큰 글자의 아래 삐침과 겹치지 않게 */
+    position: relative; z-index: 2;
+}
+.sub {
+    font-weight: 400; color: #444;
+    font-size: clamp(1.1rem, 1.5vw, 2.1rem);
+    line-height: 1.6; max-width: 38ch;
+    position: relative; z-index: 2;
+}
+.sub code { font-family: var(--font-mono); font-weight: 500; color: var(--ink); }
+/* 제목 슬라이드 오른쪽의 원 — 유일한 장식 */
+.dot {
+    position: absolute; z-index: 1;
+    right: var(--slide-padding); top: 50%;
+    transform: translateY(-50%);
+    width: clamp(36px, 5.5vw, 68px); aspect-ratio: 1;
+    background: var(--red); border-radius: 50%;
+}
+
+/* ===========================================
+   6. 코드 패널 — 이 발표의 주인공
+   얇은 테두리 머리띠에 파일명(왼쪽)과 줄 범위(오른쪽)
+   =========================================== */
+.panel {
+    border: 2px solid var(--panel-b);
+    background: var(--panel);
+    display: flex; flex-direction: column;
+    min-width: 0;                       /* 긴 코드 줄이 격자를 밀지 않게 */
+    overflow: hidden;
+}
+/* week04 는 검은 띠였다. 이번에는 파일명만 얇게, 아래 선 하나로 코드와 가른다 */
+.panel > .cap {
+    background: var(--paper); color: var(--ink);
+    font-family: var(--font-mono); font-weight: 500;
+    font-size: var(--small-size);
+    letter-spacing: .03em;
+    padding: .2em .7em;
+    border-bottom: 1.5px solid var(--panel-b);
+    display: flex; justify-content: space-between; gap: .6em;
+}
+.panel > .cap .side { color: var(--mut); font-weight: 400; }
+.panel.accent { border-color: var(--red); }
+.panel.accent > .cap { border-bottom-color: var(--red); }
+.panel.accent > .cap .side { color: var(--red); }
+
+pre {
+    font-family: var(--font-mono);
+    font-size: var(--code-size);
+    line-height: 1.6;
+    padding: clamp(.5rem, 1.4vh, 1rem) clamp(.7rem, 1.2vw, 1.1rem);
+    overflow: hidden;
+    white-space: pre;
+    tab-size: 4;
+    flex: 1;
+}
+/* 코드 안의 색 — 빨강은 "여기를 보라"는 표시로만 쓴다 */
+.c-hit { color: var(--red); font-weight: 600; }
+.c-com { color: #9a9a9a; }
+.c-dim { color: #b4b4b4; }
+
+/* 결론 한 줄 — 코드 아래에 붙는 굵은 문장 */
+.punch {
+    position: relative; z-index: 2;
+    padding: clamp(.3rem,.8vh,.6rem) 0;
+    font-size: clamp(1.05rem, 1.32vw, 1.95rem);
+    font-weight: 500; line-height: 1.5;
+    max-width: 66ch;
+}
+/* 문장 앞의 빨간 정사각형 — 세로 막대 대신 쓰는 표식 */
+.punch::before {
+    content: "";
+    display: inline-block;
+    width: .6em; height: .6em;
+    background: var(--red);
+    margin-right: .55em;
+    vertical-align: .02em;
+}
+.punch b { color: var(--red); font-weight: 700; }
+.punch code { font-family: var(--font-mono); font-weight: 600; }
+
+/* 마지막 장의 체크 항목 상자 */
+.takeaway {
+    position: relative; z-index: 2;
+    border: 2px solid var(--ink);
+    padding: clamp(.8rem,2vh,1.4rem) clamp(.9rem,1.8vw,1.6rem);
+    max-width: 58ch;
+    font-size: clamp(1rem, 1.28vw, 1.85rem);
+    line-height: 1.7;
+}
+.takeaway .k {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--small-size);
+    letter-spacing: .18em; text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: .5em;
+}
+.takeaway b { color: var(--red); }
+.takeaway small { color: var(--mut); font-size: .8em; }
+
+/* ===========================================
+   6-A. 기계가 한 말 (컴파일러 · nm)
+   터미널처럼 어둡게. 코드 패널과 성격을 구분한다
+   =========================================== */
+.machine { border: 2px solid var(--ink); background: #14171c; }
+.machine > .cap { background: #14171c; color: #d5d1c9; border-bottom-color: #3a3f47; }
+.machine > .cap .side { color: #e0a458; }
+.machine pre { color: #d5d1c9; }
+.m-err  { color: #ff6a3d; font-weight: 600; }
+.m-dim  { color: #7e858f; }
+.m-ok   { color: #8fbf8f; font-weight: 600; }
+/* 실제 코드에 있는 줄(O)과 쓸 수 없는 줄(X) 표시 */
+.ok { color: var(--ink); font-weight: 700; }
+.ng { color: var(--red); font-weight: 700; }
+
+/* ===========================================
+   6-B. 두 칸 배치 (S2 · S5)
+   =========================================== */
+.two {
+    display: grid; position: relative; z-index: 2;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(.6rem, 1.6vw, 1.4rem);
+    align-items: start;
+}
+.two.wide-r { grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); }
+.stack { display: flex; flex-direction: column; gap: clamp(.45rem, 1.2vh, .9rem); min-width: 0; }
+
+/* ===========================================
+   6-C. 컴파일과 링크 그림 (S3)
+   윗줄: 소스 셋과 include 화살표
+   가운뎃줄: ① compile
+   아랫줄: 오브젝트 파일 둘과 ② link 화살표
+   =========================================== */
+.flow {
+    display: grid; position: relative; z-index: 2;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.1fr) auto minmax(0, 1fr);
+    column-gap: clamp(.4rem, .9vw, .9rem);
+    row-gap: clamp(.25rem, .8vh, .6rem);
+    align-items: center;
+}
+.flow pre { font-size: clamp(.85rem, min(1.3vw, 2.3vh), 2rem); }
+.flow .arrow, .flow .down {
+    font-family: var(--font-mono); font-size: var(--small-size);
+    color: var(--mut); white-space: nowrap;
+}
+.flow .down { text-align: center; }
+.flow .down b, .flow .link b { color: var(--red); font-weight: 600; }
+.flow .f-main { grid-column: 1; grid-row: 1; }
+.flow .a1     { grid-column: 2; grid-row: 1; }
+.flow .f-h    { grid-column: 3; grid-row: 1; }
+.flow .a2     { grid-column: 4; grid-row: 1; }
+.flow .f-rc   { grid-column: 5; grid-row: 1; }
+.flow .d1     { grid-column: 1; grid-row: 2; }
+.flow .d2     { grid-column: 5; grid-row: 2; }
+.flow .f-mo   { grid-column: 1; grid-row: 3; }
+.flow .link   { grid-column: 2 / 5; grid-row: 3; }
+.flow .f-ro   { grid-column: 5; grid-row: 3; }
+/* 링크 화살표: 선 · 이름표 · 선 · 화살촉 */
+.flow .link {
+    display: flex; align-items: center; gap: .6em;
+    font-family: var(--font-mono); font-size: var(--small-size); color: var(--red);
+    white-space: nowrap;
+}
+.flow .link i { flex: 1; height: 2px; background: var(--red); }
+
+/* ===========================================
+   6-D. 콜백 세 패널 (S4)
+   위: 둘이 공유하는 모양(record.h) / 아래 왼쪽: core / 아래 오른쪽: interface
+   =========================================== */
+.cb {
+    display: grid; position: relative; z-index: 2;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(.5rem, 1.4vw, 1.2rem);
+    align-items: start;
+}
+.cb .cb-h { grid-column: 1 / 3; }
+
+/* ===========================================
+   6-F. 구조도 (01) — 5초쯤 보여 주는 그림
+   SVG 안의 선과 글자는 currentColor 를 따른다. 빨강은 구조체 정의 한 곳에만
+   =========================================== */
+.map { position: relative; z-index: 2; margin: 0; color: var(--ink); display: flex; flex-direction: column; gap: clamp(.3rem, 1vh, .8rem); }
+.map svg { display: block; width: 100%; height: auto; max-height: 62vh; }
+
+/* ===========================================
+   6-E. 단계 공개 — 누를 때마다 하나씩
+   .at.s1 은 1단계부터, .s2 는 2단계부터, .s3 은 3단계부터 보인다
+   =========================================== */
+.at { opacity: 0; transform: translateY(.35em); transition: opacity .3s ease, transform .3s ease; }
+.slide[data-step="1"] .at.s1,
+.slide[data-step="2"] .at.s1, .slide[data-step="2"] .at.s2,
+.slide[data-step="3"] .at.s1, .slide[data-step="3"] .at.s2, .slide[data-step="3"] .at.s3 {
+    opacity: 1; transform: none;
+}
+/* 아직 누를 단계가 남았다는 표시 — 발표자가 보는 신호 */
+.step-dot {
+    position: absolute; right: var(--slide-padding); bottom: 0;
+    width: clamp(9px, .7vw, 14px); aspect-ratio: 1; border-radius: 50%;
+    background: var(--red); z-index: 3;
+    animation: breathe 1.9s ease-in-out infinite;
+}
+.slide[data-max-step="3"][data-step="3"] .step-dot,
+.slide[data-max-step="2"][data-step="2"] .step-dot { display: none; }
+@keyframes breathe { 50% { opacity: .25; } }
+
+/* ===========================================
+   7. 등장 애니메이션 — 슬라이드가 보일 때 한 번
+   =========================================== */
+.reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.slide.visible .reveal { opacity: 1; transform: translateY(0); }
+.slide.visible .reveal:nth-child(1) { transition-delay: .06s; }
+.slide.visible .reveal:nth-child(2) { transition-delay: .16s; }
+.slide.visible .reveal:nth-child(3) { transition-delay: .26s; }
+.slide.visible .reveal:nth-child(4) { transition-delay: .36s; }
+.slide.visible .reveal:nth-child(5) { transition-delay: .46s; }
+
+/* ===========================================
+   8. 진행 막대 · 이동 점 · 조작 안내
+   =========================================== */
+/* 진행 막대: width 대신 scaleX 를 움직인다. 레이아웃을 다시 계산하지 않는다 */
+.progress-bar {
+    position: fixed; top: 0; left: 0; height: 4px; width: 100%;
+    background: var(--red); z-index: 9999;
+    transform: scaleX(0); transform-origin: left center;
+    transition: transform .18s linear;
+}
+.nav-dots {
+    position: fixed; right: clamp(.6rem, 1.4vw, 1.4rem); top: 50%;
+    transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: .55rem; z-index: 9998;
+}
+.nav-dots button {
+    width: 9px; height: 9px; padding: 0; border: 1.5px solid var(--ink);
+    background: transparent; border-radius: 50%; cursor: pointer;
+    transition: background .2s, transform .2s;
+}
+.nav-dots button.active { background: var(--red); border-color: var(--red); transform: scale(1.35); }
+.keyboard-hint {
+    animation: hint-out .5s 5s forwards;
+    position: fixed; left: clamp(.6rem,1.4vw,1.4rem); bottom: clamp(.5rem,1.2vh,1rem);
+    font-family: var(--font-mono); font-size: clamp(.55rem,1vh,.72rem);
+    color: var(--mut); z-index: 9998; opacity: .75;
+}
+
+@keyframes hint-out { to { opacity: 0; visibility: hidden; } }
+
+/* ===========================================
+   9. 브라우저 편집 모드 (E 키 또는 왼쪽 위 모서리)
+   =========================================== */
+.edit-hotzone {
+    position: fixed; top: 0; left: 0; width: 80px; height: 80px;
+    z-index: 10000; cursor: pointer;
+}
+.edit-toggle {
+    position: fixed; top: 14px; left: 14px;
+    width: 42px; height: 42px; border: 2px solid var(--ink);
+    background: var(--paper); border-radius: 50%; cursor: pointer;
+    font-size: 17px; line-height: 1;
+    opacity: 0; pointer-events: none;
+    transition: opacity .3s ease;
+    z-index: 10001;
+}
+.edit-toggle.show, .edit-toggle.active { opacity: 1; pointer-events: auto; }
+.edit-toggle.active { background: var(--red); border-color: var(--red); }
+.edit-banner {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--ink); color: var(--paper);
+    font-family: var(--font-mono); font-size: clamp(.6rem,1.1vh,.78rem);
+    padding: .55em 1em; text-align: center;
+    transform: translateY(100%); transition: transform .3s var(--ease);
+    z-index: 10001;
+}
+.edit-banner.active { transform: translateY(0); }
+body.edit-active [contenteditable] {
+    outline: 1px dashed var(--red);
+    outline-offset: 3px;
+}
+body.edit-active [contenteditable]:focus {
+    outline: 2px solid var(--red);
+    background: rgba(255,51,0,.05);
+}
+/* Way back to the study index. Bottom-right is the only corner the deck chrome leaves free */
+.home-link {
+    position: fixed; right: clamp(.6rem,1.4vw,1.4rem); bottom: clamp(.4rem,1vh,.8rem); z-index: 9998;
+    font-family: var(--font-mono, monospace); font-size: clamp(.55rem,1vh,.72rem);
+    color: var(--mut); text-decoration: none; opacity: .75;
+}
+.home-link:hover { opacity: 1; text-decoration: underline; }
+</style>
+</head>
+<body>
+<a class="home-link" href="https://benjohnbill.github.io/">← 학습 기록</a>
+
+<div class="progress-bar" id="progressBar"></div>
+<nav class="nav-dots" id="navDots" aria-label="슬라이드 이동"></nav>
+<div class="keyboard-hint">← → 이동 · E 편집 · Ctrl+S 저장</div>
+
+<div class="edit-hotzone" aria-hidden="true"></div>
+<button class="edit-toggle" id="editToggle" title="편집 모드 (E)" aria-label="편집 모드 켜기">✏️</button>
+<div class="edit-banner" id="editBanner">편집 모드 · 글자를 눌러 고치세요 · Ctrl+S 로 파일 저장 · E 로 끄기</div>
+
+<!-- ============================================================
+     00 · 표지
+     대본:
+     "안녕하세요. 'C에서 객체지향 프로그래밍하기'입니다."
+     ============================================================ -->
+<section class="slide" id="s1">
+    <div class="head head-space">
+        <span class="label">Krafton Jungle · Week 05</span>
+        <span class="num">00</span>
+    </div>
+    <div class="slide-content">
+        <div class="dot decorative" aria-hidden="true"></div>
+        <div class="tags reveal"><span class="eyebrow">Troubleshooting</span><span class="eyebrow ghost">study-cli</span></div>
+        <h1 class="reveal">C에서 <em>객체지향</em> 프로그래밍하기</h1>
+        <div class="rule reveal"></div>
+        <p class="sub reveal">Encapsulation</p>
+    </div>
+    <div class="foot"><span>projects/study-cli · main.c · record.c · record.h</span><span>2 MIN</span></div>
+</section>
+
+<!-- ============================================================
+     01 · 구조도   [설명하지 않고 5초쯤 보여 준다]
+     대본:
+     "CLI를 만들다가 구조체를 record.c 안에 숨겼더니, main이 할 수 없는 일이 생겼습니다."
+     (표지에서 하던 두 번째 문장을 이 장에서 말한다)
+     근거 (4010305): main.c 는 record.h · storage.h, record.c 는 record.h,
+           storage.c 는 storage.h · record.h 를 include 한다.
+           struct _Record 정의는 record.c 12–16 에만 있다. storage.c 는 r-> 없이 Sub_add 로만 기록을 넣는다
+     ============================================================ -->
+<section class="slide" id="s1b">
+    <div class="head head-space">
+        <span class="label">구조 · study-cli</span>
+        <span class="num">01</span>
+    </div>
+    <div class="slide-content">
+        <h2 class="thesis reveal">main.c는 <b>헤더로만</b> core에 닿는다</h2>
+        <figure class="map reveal">
+            <svg viewBox="0 0 1400 510" preserveAspectRatio="xMinYMid meet" role="img"
+                 aria-label="study-cli 의 구조. CLI 쪽의 main.c 는 record.h 와 storage.h 만 include 하고, core 의 record.c 와 storage.c 도 헤더를 include 한다. struct _Record 의 정의는 record.c 안에만 있다.">
+                <defs><marker id="map-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+                <rect x="10" y="44" width="320" height="456" fill="none" stroke="#9a9a9a" stroke-width="2" stroke-dasharray="8 6"/>
+                <text x="24" y="30" font-family="'IBM Plex Sans KR', sans-serif" font-size="22" font-weight="700" fill="#6b6b6b">CLI 쪽 (interface)</text>
+                <rect x="400" y="44" width="990" height="456" fill="none" stroke="#9a9a9a" stroke-width="2" stroke-dasharray="8 6"/>
+                <text x="414" y="30" font-family="'IBM Plex Sans KR', sans-serif" font-size="22" font-weight="700" fill="#6b6b6b">core</text>
+                <rect x="40" y="190" width="260" height="170" fill="#f7f7f5" stroke="currentColor" stroke-width="2"/>
+                <line x1="40" y1="230" x2="300" y2="230" stroke="currentColor" stroke-width="1.5"/>
+                <text x="54" y="218" font-family="'IBM Plex Mono', monospace" font-size="21" font-weight="500" fill="currentColor">main.c</text>
+                <text x="58" y="278" font-family="'IBM Plex Sans KR', sans-serif" font-size="22" font-weight="400" fill="currentColor">argv 해석</text>
+                <text x="58" y="318" font-family="'IBM Plex Sans KR', sans-serif" font-size="22" font-weight="400" fill="currentColor">printf 출력</text>
+                <rect x="440" y="80" width="360" height="160" fill="#f7f7f5" stroke="currentColor" stroke-width="2"/>
+                <line x1="440" y1="120" x2="800" y2="120" stroke="currentColor" stroke-width="1.5"/>
+                <text x="454" y="108" font-family="'IBM Plex Mono', monospace" font-size="21" font-weight="500" fill="currentColor">record.h</text>
+                <text x="458" y="168" font-family="'IBM Plex Mono', monospace" font-size="22" font-weight="400" fill="currentColor">typedef … Rec;</text>
+                <text x="458" y="208" font-family="'IBM Plex Mono', monospace" font-size="22" font-weight="400" fill="#6b6b6b">new_record · Read_total …</text>
+                <rect x="440" y="310" width="360" height="160" fill="#f7f7f5" stroke="currentColor" stroke-width="2"/>
+                <line x1="440" y1="350" x2="800" y2="350" stroke="currentColor" stroke-width="1.5"/>
+                <text x="454" y="338" font-family="'IBM Plex Mono', monospace" font-size="21" font-weight="500" fill="currentColor">storage.h</text>
+                <text x="458" y="398" font-family="'IBM Plex Mono', monospace" font-size="22" font-weight="400" fill="currentColor">typedef … Rec;</text>
+                <text x="458" y="438" font-family="'IBM Plex Mono', monospace" font-size="22" font-weight="400" fill="#6b6b6b">file_read</text>
+                <rect x="990" y="80" width="370" height="160" fill="#f7f7f5" stroke="#ff3300" stroke-width="2"/>
+                <line x1="990" y1="120" x2="1360" y2="120" stroke="#ff3300" stroke-width="1.5"/>
+                <text x="1004" y="108" font-family="'IBM Plex Mono', monospace" font-size="21" font-weight="500" fill="currentColor">record.c</text>
+                <text x="1008" y="168" font-family="'IBM Plex Mono', monospace" font-size="22" font-weight="600" fill="#ff3300">struct _Record {</text>
+                <text x="1008" y="208" font-family="'IBM Plex Mono', monospace" font-size="22" font-weight="400" fill="currentColor">count, capacity, list };</text>
+                <rect x="990" y="310" width="370" height="160" fill="#f7f7f5" stroke="currentColor" stroke-width="2"/>
+                <line x1="990" y1="350" x2="1360" y2="350" stroke="currentColor" stroke-width="1.5"/>
+                <text x="1004" y="338" font-family="'IBM Plex Mono', monospace" font-size="21" font-weight="500" fill="currentColor">storage.c</text>
+                <text x="1008" y="398" font-family="'IBM Plex Sans KR', sans-serif" font-size="22" font-weight="400" fill="currentColor">TSV 파일 읽기</text>
+                <text x="1008" y="438" font-family="'IBM Plex Mono', monospace" font-size="22" font-weight="400" fill="#6b6b6b">Sub_add(r, …)</text>
+                <g stroke="currentColor" stroke-width="2" fill="none" marker-end="url(#map-arrow)">
+                    <line x1="300" y1="245" x2="434" y2="170"/>
+                    <line x1="300" y1="305" x2="434" y2="385"/>
+                    <line x1="990" y1="160" x2="806" y2="160"/>
+                    <line x1="990" y1="390" x2="806" y2="390"/>
+                    <line x1="990" y1="345" x2="806" y2="222"/>
+                </g>
+                <text x="1376" y="490" text-anchor="end" font-family="'IBM Plex Sans KR', sans-serif" font-size="19" fill="#6b6b6b">화살표 = #include</text>
+            </svg>
+            <figcaption class="punch">구조체 정의는 <b>record.c 안에만</b> 있다</figcaption>
+        </figure>
+    </div>
+    <div class="foot"><span>Makefile · study = main.o + record.o + storage.o</span></div>
+</section>
+
+<!-- ============================================================
+     02 · 불완전 타입으로 만든 opaque pointer
+     대본:
+     "main.c는 r이라는 포인터를 계속 넘깁니다. 그런데 main.c가 보는 헤더에는
+      Rec라는 이름만 있고, 몸체가 없습니다. 불완전 타입이죠.
+      그래서 r->count처럼 안을 보면 바로 컴파일 에러가 납니다."
+     근거: gcc 오류는 2026-10-01 에 r->count 로 재현. af23ba0 첫 빌드 때 실제로 난 오류와 같다
+     ============================================================ -->
+<section class="slide" id="s2">
+    <div class="head head-space">
+        <span class="label">불완전 타입 · opaque pointer</span>
+        <span class="num">02</span>
+    </div>
+    <div class="slide-content">
+        <h2 class="thesis reveal">main.c(CLI 쪽)는 Rec의 <b>이름만</b> 알고, 구조체의 정의는 모른다</h2>
+        <div class="two reveal">
+            <div class="stack">
+                <div class="panel">
+                    <div class="cap"><span>record.h</span><span class="side">10</span></div>
+<pre>typedef struct _Record <span class="c-hit">Rec</span>;</pre>
+                </div>
+                <div class="panel accent">
+                    <div class="cap"><span>main.c</span><span class="side">51 · 83</span></div>
+<pre>Rec *<span class="c-hit">r</span> = new_record();
+<span class="c-dim">...</span>
+Read_total(<span class="c-hit">r</span>, print_total);</pre>
+                </div>
+            </div>
+            <div class="panel machine">
+                <div class="cap"><span>gcc · main.c 에서 구조체 내부를 보면</span><span class="side">error</span></div>
+<pre>r-&gt;count;
+
+<span class="m-err">error:</span> invalid use of
+  incomplete typedef ‘Rec’</pre>
+            </div>
+        </div>
+        <p class="punch reveal">포인터로 가리킬 수는 있지만, <b>내부는 볼 수 없다</b>. 이게 불완전 타입입니다.</p>
+    </div>
+    <div class="foot"><span>record.h · main.c</span></div>
+</section>
+
+<!-- ============================================================
+     03 · 어떻게 가능한가: 컴파일과 링크   [2단계]
+     대본:
+     "그럼 어떻게 컴파일될까요?"
+       ── 누름 1: record.h ──
+     "컴파일러는 r이 들어갈 8바이트만 잡고, 비워 둔 함수 주소는 링커가 채웁니다."
+       ── 누름 2: record.c ──
+     "구조체는 실행할 때 record.c가 만들고요."
+     근거 (4010305, make 로 만든 빌드):
+       main.c 에 Rec r; 을 쓰면 error: storage size of 'r' isn't known
+       sizeof r = 8 (main.c) · sizeof *r = 24 (record.c)
+       main.o 의 call new_record = e8 00 00 00 00 + R_X86_64_PLT32 new_record
+       study  의 call new_record = e8 41 02 00 00 → call 1877 <new_record>
+                                   (0x1636 + 0x241 = 0x1877: 다음 명령어에서 new_record 까지의 거리)
+       gdb (study total C 30): &r = 0x7fffffffcd80 [stack], r = 0x55555555a010 [heap]
+     ============================================================ -->
+<section class="slide" id="s3" data-step="0" data-max-step="2">
+    <div class="head head-space">
+        <span class="label">컴파일과 링크</span>
+        <span class="num">03</span>
+    </div>
+    <div class="slide-content">
+        <h2 class="thesis reveal">컴파일러는 <b>포인터 자리(8바이트)</b>만 잡고, 링커는 <b>함수 주소</b>를 채운다</h2>
+        <div class="flow reveal">
+            <div class="panel f-main">
+                <div class="cap"><span>main.c</span></div>
+<pre>Rec *r = new_record();  <span class="ok">O</span>
+r-&gt;count;               <span class="ng">X</span></pre>
+            </div>
+            <div class="arrow a1 at s1">include ▶</div>
+            <div class="panel accent f-h at s1">
+                <div class="cap"><span>record.h</span><span class="side">10 · 15</span></div>
+<pre>typedef struct _Record Rec;
+Rec *new_record(void);</pre>
+            </div>
+            <div class="arrow a2 at s2">◀ include</div>
+            <div class="panel f-rc at s2">
+                <div class="cap"><span>record.c</span><span class="side">12 – 16 · 19</span></div>
+<pre><span class="c-hit">struct _Record</span>{
+    size_t count;
+    size_t capacity;
+    Sub **list;
+};
+Rec *r = malloc(<span class="c-hit">sizeof *r</span>);</pre>
+            </div>
+            <div class="down d1"><b>①</b> compile ▼</div>
+            <div class="down d2 at s2"><b>①</b> compile ▼ record.o</div>
+            <div class="panel machine f-mo">
+                <div class="cap"><span>main.o</span><span class="side">링크 전</span></div>
+<pre><span class="m-dim">call new_record</span>
+e8 <span class="m-err">00 00 00 00</span></pre>
+            </div>
+            <div class="link"><i></i><span><b>②</b> link · 0을 new_record까지의 거리로 채운다</span><i></i>▶</div>
+            <div class="panel machine f-ro">
+                <div class="cap"><span>study</span><span class="side">링크 후</span></div>
+<pre><span class="m-dim">call new_record</span>
+e8 <span class="m-ok">41 02 00 00</span></pre>
+            </div>
+        </div>
+        <p class="punch reveal"><code>r</code>에 들어갈 주소는 실행 중에 <code>new_record</code>가 <code>malloc</code>으로 만들어 돌려준다. 구조체 내부 정의는 끝까지 <b>main.c에 보이지 않는다</b>.</p>
+    </div>
+    <div class="step-dot" aria-hidden="true"></div>
+    <div class="foot"><span>C17 6.2.5p28 · 구조체 포인터는 모두 같은 표현</span></div>
+</section>
+
+<!-- ============================================================
+     04 · Read_total(r, print_total)   [3단계]
+     대본:
+     "Read_total(r, print_total)은 더 재미있습니다."
+       ── 누름 1: record.h ──
+     "헤더에는 print_total이 없고, int 하나를 받는 함수라는 모양만 있습니다."
+       ── 누름 2: record.c ──
+     "record.c는 합계를 구해서 받은 함수에 넘길 뿐, stdio.h조차 없습니다."
+       ── 누름 3: main.c ──
+     "출력은 main.c의 print_total이 합니다."
+     근거: record.c 의 include 는 1–3 줄이 전부. nm record.o 에 printf · print_total 없음
+     ============================================================ -->
+<section class="slide" id="s4" data-step="0" data-max-step="3">
+    <div class="head head-space">
+        <span class="label">콜백 · Read_total</span>
+        <span class="num">04</span>
+    </div>
+    <div class="slide-content">
+        <h2 class="thesis reveal"><code>Read_total(r, <b>print_total</b>)</code> 은 더 재미있다</h2>
+        <div class="cb reveal">
+            <div class="panel accent cb-h at s1">
+                <div class="cap"><span>record.h</span><span class="side">27 – 28</span></div>
+<pre>typedef void (*<span class="c-hit">Minutes</span>)(int minutes);
+void Read_total(const Rec *r, <span class="c-hit">Minutes func</span>);</pre>
+            </div>
+            <div class="panel at s2">
+                <div class="cap"><span>record.c</span><span class="side">1 – 3 · 94 – 99</span></div>
+<pre><span class="c-dim">#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "record.h"</span>   <span class="c-com">// stdio.h 없음</span>
+
+void Read_total(const Rec *r, Minutes func){
+    int total = 0;
+    for (size_t i = 0; i &lt; r-&gt;count; i++){
+        total += r-&gt;list[i]-&gt;minutes;
+    } <span class="c-hit">func(total);</span>
+}</pre>
+            </div>
+            <div class="panel at s3">
+                <div class="cap"><span>main.c</span><span class="side">11 – 13</span></div>
+<pre>void print_total(int minutes){
+    <span class="c-hit">printf</span>("Total: %d minutes\n", minutes);
+}</pre>
+            </div>
+        </div>
+        <p class="punch at s3"><code>record.c</code>는 <b>언제</b> 부를지만 알고, <b>무엇을</b> 할지는 <code>main</code>이 정한다</p>
+    </div>
+    <div class="step-dot" aria-hidden="true"></div>
+    <div class="foot"><span>record.h · record.c · main.c</span></div>
+</section>
+
+<!-- ============================================================
+     05 · 정보 은닉은 양쪽에서 일어난다
+     대본:
+     "왜 이렇게 할까요? main은 저장 방식을 모르고, record.c는 출력 방식을 모릅니다.
+      숨김이 양쪽에서 일어나죠. 그래서 record.c를 고치지 않고 함수만 바꿔 넣으면,
+      stderr로도 출력할 수 있습니다."
+     근거: print_total_err 는 실제 코드에 없는 예시. record.c 를 그대로 두고 링크해서
+           stdout / stderr 로 갈라져 나오는 것을 2026-10-01 에 확인
+     ============================================================ -->
+<section class="slide" id="s5">
+    <div class="head head-space">
+        <span class="label">정보 은닉</span>
+        <span class="num">05</span>
+    </div>
+    <div class="slide-content">
+        <h2 class="thesis reveal"><b>Why?</b> Core는 그대로 두고 main.c에서 재사용 가능</h2>
+        <div class="two wide-r reveal">
+            <div class="stack">
+                <div class="panel">
+                    <div class="cap"><span>main.c 가 모르는 것</span><span class="side">저장 방식</span></div>
+<pre>r-&gt;list · count · capacity</pre>
+                </div>
+                <div class="panel">
+                    <div class="cap"><span>record.c 가 모르는 것</span><span class="side">출력 방식</span></div>
+<pre>printf · stderr</pre>
+                </div>
+                <div class="panel accent">
+                    <div class="cap"><span>record.h</span><span class="side">둘이 공유하는 모양</span></div>
+<pre>typedef void (*Minutes)(int);</pre>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="cap"><span>main.c</span><span class="side">예시</span></div>
+<pre>void <span class="c-hit">print_total_err</span>(int minutes){
+    fprintf(<span class="c-hit">stderr</span>, "Total: %d minutes\n", minutes);
+}
+
+Read_total(r, print_total);      <span class="c-com">// stdout</span>
+Read_total(r, <span class="c-hit">print_total_err</span>);  <span class="c-com">// stderr</span></pre>
+            </div>
+        </div>
+        <p class="punch reveal"><code>record.c</code>를 <b>한 줄도 고치지 않고</b>, 같은 모양의 함수만 바꿔 넣는다</p>
+    </div>
+    <div class="foot"><span>예시 함수 · record.c 변경 없이 컴파일 · 실행 확인</span></div>
+</section>
+
+<!-- ============================================================
+     06 · 가져가실 것
+     대본:
+     "정리하면, C에 클래스는 없어도 이름만 보여 주면 몸체를 숨길 수 있고,
+      할 일은 함수 포인터로 넘기면 됩니다. 감사합니다."
+     ============================================================ -->
+<section class="slide" id="s6">
+    <div class="head head-space">
+        <span class="label">가져가실 것</span>
+        <span class="num">06</span>
+    </div>
+    <div class="slide-content">
+        <h1 class="reveal">C에 class는 없어도, <em>숨길 수는 있다</em></h1>
+        <div class="rule reveal"></div>
+        <div class="takeaway reveal">
+            <span class="k">체크 항목</span>
+            헤더에 <b>이름만</b> 두면 정의부분을 숨길 수 있습니다. <small>불완전 타입</small><br>
+            할 일은 <b>함수 포인터</b>로 넘깁니다. <small>콜백</small>
+        </div>
+    </div>
+    <div class="foot"><span>WEEK 05 · study-cli</span></div>
+</section>
+
+<script>
+/* ===========================================
+   슬라이드 조작기
+   키보드 · 휠 · 터치 · 이동 점 · 진행 막대
+   =========================================== */
+class SlidePresentation {
+    constructor() {
+        this.slides = Array.from(document.querySelectorAll('.slide'));
+        this.current = 0;
+        this.progressBar = document.getElementById('progressBar');
+        this.navDotsContainer = document.getElementById('navDots');
+        this.setupIntersectionObserver();
+        this.setupNavDots();
+        this.setupKeyboardNav();
+        this.setupTouchNav();
+        this.setupProgressBar();
+    }
+
+    /* 화면에 들어온 슬라이드에 .visible 을 붙여 등장 애니메이션을 켠다 */
+    setupIntersectionObserver() {
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    this.current = this.slides.indexOf(e.target);
+                    this.updateNavDots();
+                }
+            });
+        }, { threshold: 0.5 });
+        this.slides.forEach(s => io.observe(s));
+    }
+
+    /* 오른쪽 이동 점. 다시 그리기 전에 반드시 비운다
+       (편집 모드에서 저장한 파일을 다시 열면 점이 겹쳐 쌓이기 때문) */
+    setupNavDots() {
+        this.navDotsContainer.innerHTML = '';
+        this.slides.forEach((s, i) => {
+            const b = document.createElement('button');
+            b.setAttribute('aria-label', (i + 1) + '번 슬라이드로');
+            b.addEventListener('click', () => this.goTo(i));
+            this.navDotsContainer.appendChild(b);
+        });
+        this.updateNavDots();
+    }
+    updateNavDots() {
+        Array.from(this.navDotsContainer.children).forEach((b, i) => {
+            b.classList.toggle('active', i === this.current);
+        });
+        this.updateProgress();
+    }
+
+    goTo(i) {
+        if (i < 0 || i >= this.slides.length) return;
+        this.slides[i].scrollIntoView({ behavior: 'smooth' });
+    }
+
+    /* 단계가 있는 슬라이드: 화살표가 먼저 단계를 넘기고,
+       단계를 다 쓰면 그때 다음 장으로 간다 (reveal.js 의 fragment 와 같은 규칙) */
+    maxStep(slide) { return slide.dataset.maxStep ? Number(slide.dataset.maxStep) : (slide.querySelector('.swap') ? 1 : 0); }
+
+    next() {
+        const s = this.slides[this.current];
+        const step = Number(s.dataset.step || 0);
+        if (step < this.maxStep(s)) { s.dataset.step = step + 1; return; }
+        this.goTo(this.current + 1);
+    }
+    prev() {
+        const s = this.slides[this.current];
+        const step = Number(s.dataset.step || 0);
+        if (step > 0) { s.dataset.step = step - 1; return; }
+        /* 앞 장으로 돌아갈 때는 그 장을 마지막 단계로 열어 둔다 */
+        const t = this.slides[this.current - 1];
+        if (t) t.dataset.step = this.maxStep(t);
+        this.goTo(this.current - 1);
+    }
+
+    setupKeyboardNav() {
+        document.addEventListener('keydown', (e) => {
+            if (e.target.getAttribute('contenteditable')) return;  /* 편집 중에는 이동하지 않는다 */
+            switch (e.key) {
+                case 'ArrowRight': case 'ArrowDown': case 'PageDown': case ' ':
+                    e.preventDefault(); this.next(); break;
+                case 'ArrowLeft': case 'ArrowUp': case 'PageUp':
+                    e.preventDefault(); this.prev(); break;
+                case 'Home': e.preventDefault(); this.goTo(0); break;
+                case 'End':  e.preventDefault(); this.goTo(this.slides.length - 1); break;
+            }
+        });
+    }
+
+    setupTouchNav() {
+        let y0 = null;
+        document.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; }, { passive: true });
+        document.addEventListener('touchend', e => {
+            if (y0 === null) return;
+            const dy = y0 - e.changedTouches[0].clientY;
+            if (Math.abs(dy) > 50) { dy > 0 ? this.next() : this.prev(); }
+            y0 = null;
+        }, { passive: true });
+    }
+
+    setupProgressBar() {
+        window.addEventListener('scroll', () => this.updateProgress(), { passive: true });
+        this.updateProgress();
+    }
+    updateProgress() {
+        const p = this.current / Math.max(1, this.slides.length - 1);
+        this.progressBar.style.transform = 'scaleX(' + p + ')';
+    }
+}
+
+/* ===========================================
+   브라우저 편집기
+   E 키 또는 왼쪽 위 모서리 → 글자를 눌러 수정 → Ctrl+S 로 파일 저장
+   수정한 내용은 localStorage 에 자동 보관된다
+   =========================================== */
+class InlineEditor {
+    constructor() {
+        this.isActive = false;
+        this.key = 'week05-oop-in-c-slides';
+        this.targets = 'h1, h2, p.sub, p.punch, .takeaway, .cap span, .foot span';
+        this.toggleBtn = document.getElementById('editToggle');
+        this.signature();   /* 원본 서명을 먼저 굳힌다 */
+        this.banner = document.getElementById('editBanner');
+        this.restore();
+        this.bindSave();
+    }
+
+    toggleEditMode() {
+        this.isActive = !this.isActive;
+        document.body.classList.toggle('edit-active', this.isActive);
+        this.toggleBtn.classList.toggle('active', this.isActive);
+        this.banner.classList.toggle('active', this.isActive);
+        document.querySelectorAll(this.targets).forEach(el => {
+            if (this.isActive) {
+                el.setAttribute('contenteditable', 'true');
+                el.addEventListener('input', this.save);
+            } else {
+                el.removeAttribute('contenteditable');
+            }
+        });
+    }
+
+    save = () => {
+        const data = {};
+        document.querySelectorAll('.slide').forEach((s, i) => { data[i] = s.innerHTML; });
+        try {
+            localStorage.setItem(this.key, JSON.stringify({ sig: this.signature(), data }));
+        } catch (e) {}
+    }
+
+    /* 파일이 바뀌면 저장본은 버린다.
+       이게 없으면 한 번 저장한 내용이 파일을 영원히 덮어써서,
+       소스를 고쳐도 브라우저에 옛 화면이 계속 나온다 */
+    signature() {
+        /* restore() 보다 먼저 한 번만 계산해 둔다 — 그래야 '파일 원본'의 서명이 된다 */
+        if (this._sig) return this._sig;
+        const src = [...document.querySelectorAll('.slide')].map(s => s.innerHTML).join('\u0000');
+        let h = 5381;
+        for (let i = 0; i < src.length; i++) h = ((h * 33) ^ src.charCodeAt(i)) >>> 0;
+        return (this._sig = src.length + '-' + h.toString(36));
+    }
+
+    restore() {
+        try {
+            const raw = localStorage.getItem(this.key);
+            if (!raw) return;
+            const saved = JSON.parse(raw);
+            if (!saved || saved.sig !== this.signature()) {
+                localStorage.removeItem(this.key);   /* 파일이 바뀌었다 — 저장본 폐기 */
+                return;
+            }
+            document.querySelectorAll('.slide').forEach((s, i) => {
+                if (saved.data[i]) s.innerHTML = saved.data[i];
+            });
+        } catch (e) {}
+    }
+
+    bindSave() {
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); this.exportFile(); }
+        });
+    }
+
+    /* 저장 전에 편집 흔적을 걷어낸다.
+       그러지 않으면 저장된 파일이 편집 모드에 갇힌 채로 열린다 */
+    exportFile() {
+        const editableEls = Array.from(document.querySelectorAll('[contenteditable]'));
+        editableEls.forEach(el => el.removeAttribute('contenteditable'));
+        document.body.classList.remove('edit-active');
+        this.toggleBtn.classList.remove('active', 'show');
+        this.banner.classList.remove('active', 'show');
+
+        const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+        if (this.isActive) {
+            document.body.classList.add('edit-active');
+            editableEls.forEach(el => el.setAttribute('contenteditable', 'true'));
+            this.toggleBtn.classList.add('active');
+            this.banner.classList.add('active');
+        }
+
+        const blob = new Blob([html], { type: 'text/html' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'oop-in-c.html';
+        a.click();
+        URL.revokeObjectURL(a.href);
+    }
+}
+
+const deck = new SlidePresentation();
+const editor = new InlineEditor();
+
+/* 편집 버튼 노출 — 왼쪽 위 모서리에 400ms 유예를 두고 나타난다
+   (CSS 형제 선택자로는 버튼에 닿기 전에 사라져서 누를 수 없다) */
+const hotzone = document.querySelector('.edit-hotzone');
+const editToggle = document.getElementById('editToggle');
+let hideTimeout = null;
+
+hotzone.addEventListener('mouseenter', () => {
+    clearTimeout(hideTimeout);
+    editToggle.classList.add('show');
+});
+hotzone.addEventListener('mouseleave', () => {
+    hideTimeout = setTimeout(() => {
+        if (!editor.isActive) editToggle.classList.remove('show');
+    }, 400);
+});
+editToggle.addEventListener('mouseenter', () => clearTimeout(hideTimeout));
+editToggle.addEventListener('mouseleave', () => {
+    hideTimeout = setTimeout(() => {
+        if (!editor.isActive) editToggle.classList.remove('show');
+    }, 400);
+});
+hotzone.addEventListener('click', () => editor.toggleEditMode());
+editToggle.addEventListener('click', () => editor.toggleEditMode());
+
+document.addEventListener('keydown', (e) => {
+    if ((e.key === 'e' || e.key === 'E') && !e.target.getAttribute('contenteditable')) {
+        editor.toggleEditMode();
+    }
+});
+
+/* 첫 슬라이드는 바로 보이게 */
+document.getElementById('s1').classList.add('visible');
+</script>
+</body>
+</html>

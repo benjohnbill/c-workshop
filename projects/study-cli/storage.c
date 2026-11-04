@@ -36,7 +36,7 @@ int file_read(Rec *r, const char *file, size_t *err_line){
         // 2. Search '\t'
         char *tab = strchr(buf, '\t');
         if (tab == NULL){
-            if (err_line != NULL){
+            if (err_line !=      NULL){
                 *err_line = line;
             } fclose(f); return STORAGE_ERR_FORMAT;
         }

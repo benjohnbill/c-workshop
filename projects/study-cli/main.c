@@ -65,23 +65,27 @@ int main(int argc, char *argv[]){
             status = 0;
         } else if (stat == STORAGE_ERR_IO){
             fprintf(stderr, "Error: cannot read file '%s'\n", argv[2]);
-            status = 1; goto cleanup;
+            status = 1;
+            goto cleanup;
         } else if (stat == STORAGE_ERR_FORMAT){
             fprintf(stderr, "Error: corrupted file '%s' at line %zu\n", argv[2], err_line);
-            status = 1; goto cleanup;
+            status = 1;
+            goto cleanup;
         } else if (stat == STORAGE_ERR_NOMEM){
             perror("Allocation failed");
-            status = 1; goto cleanup;
+            status = 1;
+            goto cleanup;
         }
     }
 
     else if (argv[1] != NULL && strcmp(argv[1], "total") == 0){
         status = argc_check(argc);
-        if (status){ goto cleanup; }
+        if (status) { goto cleanup; }
         status = argv_check(r, argc, argv);
         if (status){ goto cleanup; }
         Read_total(r, print_total);
     }
+
     else {
         fprintf(stderr, "Please input ./study with subcommands\n");
         status = 2;
