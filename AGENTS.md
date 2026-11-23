@@ -9,6 +9,12 @@ born: 2026-09-22
 
 # Purpose
 
+> **Codex:** this repository is its own git root, so Codex does not load the
+> workspace rules above it. Before the first reply, read
+> [`../AGENTS.md`](../AGENTS.md) (workspace router) and
+> [`../docs/tutor-spine.md`](../docs/tutor-spine.md) (tutor spine). Claude Code
+> already loads both through the parent `CLAUDE.md`.
+
 This repository builds C fluency from function pointers through one usable
 program. Stages 1–5 are single-file drills in `practice/`. Stages 6–11 grow
 one product, `study`, in `projects/study-cli/`: a CLI that records study
